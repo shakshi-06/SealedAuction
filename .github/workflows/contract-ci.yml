@@ -1,0 +1,43 @@
+name: Contract CI
+
+on:
+  push:
+    paths:
+      - "contract/**"
+  pull_request:
+    paths:
+      - "contract/**"
+
+jobs:
+  compile-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Compact toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        working-directory: contract
+        run: npm install
+
+      - name: Compile contract
+        working-directory: contract
+        run: |
+          source "$HOME/.local/bin/env"
+          compact update
+          npm run compact
+
+      - name: Build TypeScript
+        working-directory: contract
+        run: npm run build
+
+      - name: Run tests
+        working-directory: contract
+        run: npm run test
