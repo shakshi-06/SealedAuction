@@ -1,20 +1,11 @@
-/**
- * Test suite for the sealed-bid auction contract.
- *
- * NOTE ON HARNESS BOILERPLATE:
- * The low-level context-construction boilerplate below (creating a
- * ConstructorContext / CircuitContext and driving the compiled contract
- * through @midnight-ntwrk/compact-runtime) follows the same shape used in
- * Midnight's official example templates (e.g. midnightntwrk/example-counter,
- * contract/src/test/). If any of the constructor/helper names below don't
- * match the exact version of @midnight-ntwrk/compact-runtime installed by
- * `npm install`, copy the working harness setup from that template's test
- * file and keep the business-logic assertions here — that's expected,
- * version-to-version API drift in a fast-moving toolchain is normal.
- */
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import * as compactRuntime from "@midnight-ntwrk/compact-runtime";
-import { Contract, type Ledger } from "../managed/auction/contract/index.js";
+import {
+  Contract,
+  ledger,
+  pureCircuits,
+  type Ledger,
+} from "../managed/auction/contract/index.js";
 import {
   witnesses,
   createAuctionPrivateState,
@@ -24,54 +15,56 @@ import {
 const AUCTIONEER_KEY = new Uint8Array(32).fill(1);
 const BIDDER_KEY = new Uint8Array(32).fill(2);
 const OTHER_BIDDER_KEY = new Uint8Array(32).fill(3);
+const SAMPLE_COIN_PUBLIC_KEY = "0".repeat(64);
 
 function makeContractAndContext(secretKey: Uint8Array) {
   const contract = new Contract<AuctionPrivateState>(witnesses);
   const privateState = createAuctionPrivateState(secretKey);
-  const constructorContext = new compactRuntime.ConstructorContext(
+
+  const constructorContext = compactRuntime.createConstructorContext(
     privateState,
-    "0".repeat(64),
+    SAMPLE_COIN_PUBLIC_KEY,
   );
-  const { currentPrivateState, currentContractState, currentZswapLocalState } =
+  const { currentContractState, currentPrivateState, currentZswapLocalState } =
     contract.initialState(constructorContext);
-  const context: compactRuntime.CircuitContext<AuctionPrivateState> = {
-    currentPrivateState,
+
+  const address = compactRuntime.sampleContractAddress();
+  const context = compactRuntime.createCircuitContext(
+    address,
     currentZswapLocalState,
-    originalState: currentContractState,
-    transactionContext: new compactRuntime.QueryContext(
-      currentContractState.data,
-      compactRuntime.sampleContractAddress(),
-    ),
-  };
+    currentContractState,
+    currentPrivateState,
+  );
+
   return { contract, context };
 }
 
-function bidCommitment(amount: bigint, nonce: Uint8Array): Uint8Array {
-  // Mirrors the contract's own commitment hash: persistentHash(["auction:bid:", amount, nonce])
-  return compactRuntime.persistentHash(
-    compactRuntime.encodeVector([
-      compactRuntime.pad(32, "auction:bid:"),
-      compactRuntime.encodeToPaddedBytes(amount, 32),
-      nonce,
-    ]),
-  );
+function withPrivateState(
+  context: compactRuntime.CircuitContext<AuctionPrivateState>,
+  privateState: AuctionPrivateState,
+): compactRuntime.CircuitContext<AuctionPrivateState> {
+  return { ...context, currentPrivateState: privateState };
+}
+
+function readLedger(
+  context: compactRuntime.CircuitContext<AuctionPrivateState>,
+): Ledger {
+  return ledger(context.currentQueryContext.state);
 }
 
 describe("sealed-bid auction contract", () => {
   it("initializes in the COMMIT phase with no active bid", () => {
-    const { contract, context } = makeContractAndContext(AUCTIONEER_KEY);
-    const ledger: Ledger = contract.ledger(context.originalState.data);
-    expect(ledger.phase).toBe(0); // Phase.COMMIT
-    expect(ledger.hasActiveBid).toBe(false);
-    expect(ledger.highestBid).toBe(0n);
+    const { context } = makeContractAndContext(AUCTIONEER_KEY);
+    const state = readLedger(context);
+    expect(state.phase).toBe(0); // Phase.COMMIT
+    expect(state.hasActiveBid).toBe(false);
+    expect(state.highestBid).toBe(0n);
   });
 
   it("lets the first caller claim the auctioneer role, and blocks a second claim", () => {
     const { contract, context } = makeContractAndContext(AUCTIONEER_KEY);
     const { context: afterClaim } = contract.circuits.claimAuctioneer(context);
-    const ledgerAfter: Ledger = contract.ledger(afterClaim.originalState.data);
-    expect(ledgerAfter.auctioneerSet).toBe(true);
-
+    expect(readLedger(afterClaim).auctioneerSet).toBe(true);
     expect(() => contract.circuits.claimAuctioneer(afterClaim)).toThrow();
   });
 
@@ -79,17 +72,22 @@ describe("sealed-bid auction contract", () => {
     const { contract, context } = makeContractAndContext(AUCTIONEER_KEY);
     const { context: afterClaim } = contract.circuits.claimAuctioneer(context);
 
-    const bidderContext = { ...afterClaim, currentPrivateState: createAuctionPrivateState(BIDDER_KEY) };
-    const commitment = bidCommitment(500n, new Uint8Array(32).fill(9));
-    const { context: afterCommit } = contract.circuits.commitBid(bidderContext, commitment);
+    const nonce = new Uint8Array(32).fill(9);
+    const commitment = pureCircuits.computeBidCommitment(500n, nonce);
+    const bidderCtx = withPrivateState(
+      afterClaim,
+      createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 1000n),
+    );
+    const { context: afterCommit } = contract.circuits.commitBid(bidderCtx, commitment);
+    expect(readLedger(afterCommit).hasActiveBid).toBe(true);
 
-    const ledgerAfter: Ledger = contract.ledger(afterCommit.originalState.data);
-    expect(ledgerAfter.hasActiveBid).toBe(true);
-
-    const otherBidderContext = { ...afterCommit, currentPrivateState: createAuctionPrivateState(OTHER_BIDDER_KEY) };
-    expect(() =>
-      contract.circuits.commitBid(otherBidderContext, bidCommitment(400n, new Uint8Array(32).fill(7))),
-    ).toThrow();
+    const otherNonce = new Uint8Array(32).fill(7);
+    const otherCommitment = pureCircuits.computeBidCommitment(400n, otherNonce);
+    const otherCtx = withPrivateState(
+      afterCommit,
+      createAuctionPrivateState(OTHER_BIDDER_KEY, 400n, otherNonce, 1000n),
+    );
+    expect(() => contract.circuits.commitBid(otherCtx, otherCommitment)).toThrow();
   });
 
   it("only the committed bidder can reveal, and the reveal must match the sealed commitment", () => {
@@ -97,24 +95,32 @@ describe("sealed-bid auction contract", () => {
     const { context: afterClaim } = contract.circuits.claimAuctioneer(context);
 
     const nonce = new Uint8Array(32).fill(9);
-    const bidderContext = { ...afterClaim, currentPrivateState: createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 1000n) };
-    const { context: afterCommit } = contract.circuits.commitBid(bidderContext, bidCommitment(500n, nonce));
+    const commitment = pureCircuits.computeBidCommitment(500n, nonce);
+    const bidderCtx = withPrivateState(
+      afterClaim,
+      createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 1000n),
+    );
+    const { context: afterCommit } = contract.circuits.commitBid(bidderCtx, commitment);
 
-    const auctioneerContext = { ...afterCommit, currentPrivateState: createAuctionPrivateState(AUCTIONEER_KEY) };
-    const { context: afterAdvance } = contract.circuits.advanceToReveal(auctioneerContext);
+    const auctioneerCtx = withPrivateState(afterCommit, createAuctionPrivateState(AUCTIONEER_KEY));
+    const { context: afterAdvance } = contract.circuits.advanceToReveal(auctioneerCtx);
 
-    // Wrong bidder trying to reveal should fail.
-    const impostorContext = { ...afterAdvance, currentPrivateState: createAuctionPrivateState(OTHER_BIDDER_KEY, 500n, nonce, 1000n) };
-    expect(() => contract.circuits.revealBid(impostorContext)).toThrow();
+    const impostorCtx = withPrivateState(
+      afterAdvance,
+      createAuctionPrivateState(OTHER_BIDDER_KEY, 500n, nonce, 1000n),
+    );
+    expect(() => contract.circuits.revealBid(impostorCtx)).toThrow();
 
-    // Correct bidder, correct amount + nonce -> succeeds and updates highestBid.
-    const revealContext = { ...afterAdvance, currentPrivateState: createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 1000n) };
-    const { context: afterReveal, result } = contract.circuits.revealBid(revealContext);
+    const revealCtx = withPrivateState(
+      afterAdvance,
+      createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 1000n),
+    );
+    const { context: afterReveal, result } = contract.circuits.revealBid(revealCtx);
     expect(result).toBe(500n);
 
-    const ledgerAfter: Ledger = contract.ledger(afterReveal.originalState.data);
-    expect(ledgerAfter.highestBid).toBe(500n);
-    expect(ledgerAfter.hasActiveBid).toBe(false);
+    const stateAfter = readLedger(afterReveal);
+    expect(stateAfter.highestBid).toBe(500n);
+    expect(stateAfter.hasActiveBid).toBe(false);
   });
 
   it("rejects a reveal where claimed funds are insufficient for the bid", () => {
@@ -122,21 +128,28 @@ describe("sealed-bid auction contract", () => {
     const { context: afterClaim } = contract.circuits.claimAuctioneer(context);
 
     const nonce = new Uint8Array(32).fill(4);
-    const bidderContext = { ...afterClaim, currentPrivateState: createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 100n) };
-    const { context: afterCommit } = contract.circuits.commitBid(bidderContext, bidCommitment(500n, nonce));
+    const commitment = pureCircuits.computeBidCommitment(500n, nonce);
+    const bidderCtx = withPrivateState(
+      afterClaim,
+      createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 100n),
+    );
+    const { context: afterCommit } = contract.circuits.commitBid(bidderCtx, commitment);
 
-    const auctioneerContext = { ...afterCommit, currentPrivateState: createAuctionPrivateState(AUCTIONEER_KEY) };
-    const { context: afterAdvance } = contract.circuits.advanceToReveal(auctioneerContext);
+    const auctioneerCtx = withPrivateState(afterCommit, createAuctionPrivateState(AUCTIONEER_KEY));
+    const { context: afterAdvance } = contract.circuits.advanceToReveal(auctioneerCtx);
 
-    const revealContext = { ...afterAdvance, currentPrivateState: createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 100n) };
-    expect(() => contract.circuits.revealBid(revealContext)).toThrow();
+    const revealCtx = withPrivateState(
+      afterAdvance,
+      createAuctionPrivateState(BIDDER_KEY, 500n, nonce, 100n),
+    );
+    expect(() => contract.circuits.revealBid(revealCtx)).toThrow();
   });
 
   it("never exposes the secret key through any public ledger field", () => {
     const { contract, context } = makeContractAndContext(AUCTIONEER_KEY);
     const { context: afterClaim } = contract.circuits.claimAuctioneer(context);
-    const ledgerAfter: Ledger = contract.ledger(afterClaim.originalState.data);
-    const serialized = JSON.stringify(ledgerAfter, (_key, value) =>
+    const state = readLedger(afterClaim);
+    const serialized = JSON.stringify(state, (_key, value) =>
       typeof value === "bigint" ? value.toString() : value,
     );
     const keyHex = Buffer.from(AUCTIONEER_KEY).toString("hex");

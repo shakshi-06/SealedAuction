@@ -37,10 +37,17 @@ witness getWalletLiquidity(): Uint<64>;
 export circuit auctioneerId(sk: Bytes<32>): Bytes<32> {
   return persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:auctioneer:"), sk]);
 }
-
 // Stable identity commitment for a bidder.
 export circuit bidderId(sk: Bytes<32>): Bytes<32> {
   return persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:bidder:"), sk]);
+}
+// Computes the sealed commitment hash for a given bid amount + nonce.
+// Exposed as a pure circuit so tests and the frontend can compute the exact
+// same commitment the contract itself checks against during reveal.
+export circuit computeBidCommitment(bidAmount: Uint<64>, nonce: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>(
+    [pad(32, "auction:bid:"), bidAmount as Field as Bytes<32>, nonce]
+  );
 }
 
 // Whoever calls this first becomes the auctioneer for this contract instance.
@@ -91,7 +98,8 @@ export circuit revealBid(): Uint<64> {
   const funds = getWalletLiquidity();
   assert(funds >= bidAmount, "Insufficient funds to cover this bid");
 
-  if (bidAmount > highestBid) {
+  const bidBeatsHighest = disclose(bidAmount > highestBid);
+  if (bidBeatsHighest) {
     highestBid = disclose(bidAmount);
     winnerId = disclose(myId);
   }
