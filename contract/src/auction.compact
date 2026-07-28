@@ -1,0 +1,110 @@
+pragma language_version >= 0.16 && <= 0.31;
+
+import CompactStandardLibrary;
+
+// Lifecycle of a single sealed-bid auction round.
+export enum Phase {
+  COMMIT,
+  REVEAL,
+  RESOLVED
+}
+
+// ---- Public ledger state (visible to everyone on-chain) ----
+export ledger phase: Phase;
+export ledger auctioneerSet: Boolean;
+export ledger auctioneer: Bytes<32>;
+export ledger round: Counter;
+export ledger hasActiveBid: Boolean;
+export ledger bidCommitment: Bytes<32>;
+export ledger committedBidder: Bytes<32>;
+export ledger highestBid: Uint<64>;
+export ledger winnerId: Bytes<32>;
+
+constructor() {
+  phase = Phase.COMMIT;
+  auctioneerSet = false;
+  hasActiveBid = false;
+  highestBid = 0;
+}
+
+// ---- Private witnesses (answered locally, never touch the chain) ----
+witness localSecretKey(): Bytes<32>;
+witness getBidAmount(): Uint<64>;
+witness getBidNonce(): Bytes<32>;
+witness getWalletLiquidity(): Uint<64>;
+
+// Stable identity commitment for the auction creator/organizer.
+export circuit auctioneerId(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:auctioneer:"), sk]);
+}
+
+// Stable identity commitment for a bidder.
+export circuit bidderId(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:bidder:"), sk]);
+}
+
+// Whoever calls this first becomes the auctioneer for this contract instance.
+export circuit claimAuctioneer(): [] {
+  assert(!auctioneerSet, "Auctioneer already claimed for this auction");
+  auctioneer = disclose(auctioneerId(localSecretKey()));
+  auctioneerSet = true;
+}
+
+// A bidder seals their bid by submitting only a commitment hash.
+// The hash is computed off-chain as:
+//   persistentHash(["auction:bid:", bidAmount, nonce])
+// so the amount stays hidden until reveal.
+export circuit commitBid(newCommitment: Bytes<32>): [] {
+  assert(phase == Phase.COMMIT, "Not in the commit phase");
+  assert(!hasActiveBid, "A sealed bid is already pending reveal this round");
+  committedBidder = disclose(bidderId(localSecretKey()));
+  bidCommitment = disclose(newCommitment);
+  hasActiveBid = true;
+}
+
+// Only the auctioneer can move the auction from commit to reveal.
+export circuit advanceToReveal(): [] {
+  assert(phase == Phase.COMMIT, "Already past the commit phase");
+  assert(auctioneerId(localSecretKey()) == auctioneer, "Only the auctioneer can advance the phase");
+  phase = Phase.REVEAL;
+}
+
+// The committed bidder reveals their real bid + nonce. The circuit proves:
+//  1. The reveal matches the original sealed commitment.
+//  2. The bidder has sufficient funds to cover the bid (solvency).
+// Only if both hold, and only if this bid beats the current highest, does
+// the amount become the new public highestBid.
+export circuit revealBid(): Uint<64> {
+  assert(phase == Phase.REVEAL, "Not in the reveal phase");
+  assert(hasActiveBid, "No pending bid to reveal this round");
+
+  const myId = bidderId(localSecretKey());
+  assert(myId == committedBidder, "Only the committed bidder may reveal this bid");
+
+  const bidAmount = getBidAmount();
+  const nonce = getBidNonce();
+  const recomputed = persistentHash<Vector<3, Bytes<32>>>(
+    [pad(32, "auction:bid:"), bidAmount as Field as Bytes<32>, nonce]
+  );
+  assert(recomputed == bidCommitment, "Revealed bid does not match the sealed commitment");
+
+  const funds = getWalletLiquidity();
+  assert(funds >= bidAmount, "Insufficient funds to cover this bid");
+
+  if (bidAmount > highestBid) {
+    highestBid = disclose(bidAmount);
+    winnerId = disclose(myId);
+  }
+
+  hasActiveBid = false;
+  round.increment(1);
+
+  return disclose(bidAmount);
+}
+
+// Only the auctioneer can close the auction after reveal.
+export circuit resolveAuction(): [] {
+  assert(phase == Phase.REVEAL, "Not in the reveal phase");
+  assert(auctioneerId(localSecretKey()) == auctioneer, "Only the auctioneer can resolve the auction");
+  phase = Phase.RESOLVED;
+}
