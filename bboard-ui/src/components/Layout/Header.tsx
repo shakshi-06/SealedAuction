@@ -41,11 +41,30 @@ export const Header: React.FC = () => {
         {/* Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
           <Box 
-            component="img" 
-            src="/logo.png" 
-            alt="SealedAuction Logo" 
-            sx={{ width: 140, height: 'auto', objectFit: 'contain', borderRadius: '8px' }} 
-          />
+            sx={{ 
+              width: 56, 
+              height: 56, 
+              borderRadius: '50%', 
+              overflow: 'hidden', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              background: '#fff'
+            }}
+          >
+            <Box 
+              component="img" 
+              src="/logo.png" 
+              alt="SealedAuction Logo" 
+              sx={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover', 
+                transform: 'scale(1.35)',
+                transformOrigin: 'center center'
+              }} 
+            />
+          </Box>
         </Box>
 
         {/* Navigation */}
