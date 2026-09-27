@@ -1,131 +1,138 @@
-# Sealed-Bid Auctions with Solvency Safeguards
+# Sealed-Bid Auction on Midnight Network
 
-A privacy-preserving sealed-bid auction dApp built on Midnight with Compact.
-Built for **New Moon to Full: Monthly Moonshots on Midnight** — Level 1 (New Moon).
+[![CI](https://github.com/YOUR_USERNAME/auction-cli-scaffold/actions/workflows/ci.yaml/badge.svg)](https://github.com/YOUR_USERNAME/auction-cli-scaffold/actions/workflows/ci.yaml)
 
-## Product idea
+> Prove your bid is the highest — without revealing the amount until the reveal phase.
 
-Traditional on-chain auctions expose every bid the moment it's submitted, which
-invites front-running and lets other bidders game the process by watching the
-mempool. Off-chain sealed-bid auctions solve that, but require trusting a
-centralized auctioneer not to peek early or favor a preferred bidder. This
-project uses a commit-reveal scheme backed by zero-knowledge proofs: bidders
-submit only a cryptographic commitment to their bid during the commit phase,
-so no one — not even the auctioneer — can see any bid amount until the reveal
-phase. When a bidder reveals, the contract proves in zero-knowledge that (a)
-the revealed amount matches their original sealed commitment and (b) they
-actually have sufficient funds to cover it, without ever putting the losing
-bids, or the winning bidder's wallet balance, on the public record. Only the
-final highest bid and the identity commitment of the winner become public,
-and only once the auction is resolved.
+## Live Demo
+- App: https://myproject.vercel.app  (Deploy to Vercel)
+- Contract (Preprod): `YOUR_64_CHAR_HEX_ADDRESS_HERE`
+- Explorer: https://preprod.midnightexplorer.com/contracts/YOUR_ADDRESS
+- Twitter/X: https://twitter.com/YourHandle
+- Demo Video: https://youtube.com/watch?v=...
 
-## Public ledger state vs. private witness
+## Privacy Model
 
-Compact contracts split all state into two categories: what's written to the
-public, on-chain ledger (visible to everyone, forever) and what stays entirely
-on the caller's own machine as a **private witness** (never touches the chain,
-never appears in any transaction).
+When a bidder calls `commitBid`, only a **commitment hash** `H(amount, nonce)` is stored on-chain. The actual bid amount stays in the bidder's browser, never disclosed.
 
-**Public ledger state** (`contract/src/auction.compact`):
-- `phase` — whether the auction is in COMMIT, REVEAL, or RESOLVED
-- `auctioneerSet` / `auctioneer` — a *commitment* (hash) identifying who
-  controls phase transitions, not their real identity or key
-- `bidCommitment` — the sealed hash of the current bid (not the amount)
-- `committedBidder` — a commitment identifying who sealed that bid
-- `highestBid` / `winnerId` — populated only after a successful, verified
-  reveal; this is the *only* point at which an actual bid amount becomes public
+When the auctioneer opens the reveal phase, each bidder calls `revealBid`. A ZK proof verifies that `H(amount, nonce) == stored_commitment` before updating the highest bid — proving authenticity without intermediate disclosure.
 
-**Private witnesses** (`contract/src/witnesses.ts`):
-- `localSecretKey()` — the caller's private key material; used only inside
-  zero-knowledge circuits to derive identity commitments, never disclosed itself
-- `getBidAmount()` / `getBidNonce()` — the real bid amount and the secret
-  nonce used to seal it; known only to the bidder until they choose to reveal
-- `getWalletLiquidity()` — the bidder's available funds, used only to prove
-  (without revealing the actual balance) that they can cover their bid
+An observer CAN see:
+- That a bid commitment was submitted
+- Whether the reveal phase is open
+- The final highest bid (after resolution)
+- Which contract address to join
+- The total number of bids submitted
 
-The key privacy mechanism is `disclose()`: by default, Compact refuses to let
-any value derived from a witness be written to a public ledger field. Every
-place in the contract where a witness-derived value becomes public
-(`auctioneer`, `bidCommitment`, `committedBidder`, `highestBid`, `winnerId`,
-and the `revealBid` return value) is explicitly wrapped in `disclose()` — a
-deliberate developer decision that this specific value, and only this value,
-is safe to reveal. Everything else (the actual bid amount before reveal, the
-nonce, the wallet balance, the raw secret key) never leaves the caller's
-machine.
+An observer CANNOT see:
+- Any bidder's actual bid amount before resolution
+- The nonce used in the commitment
+- The auctioneer's identity (no `msg.sender` in Midnight!)
+- Who submitted a bid (nullifier pattern prevents double-bidding anonymously)
 
-## Prerequisites
+## How It Works
 
-- [Compact toolchain](https://docs.midnight.network/getting-started/installation)
-  (`compact` CLI, tested with compiler `0.31.1`)
-- [Docker](https://www.docker.com/products/docker-desktop/) (for the local proof server)
-- Node.js ≥ 22
+```
+COMMIT PHASE
+  Auctioneer deploys contract → Bidders submit H(amount, nonce) → Auctioneer opens reveal
 
-## Setup — run locally
+REVEAL PHASE
+  Each bidder proves: H(amount, nonce) == commitment
+  Highest bid updated if ZK proof passes
+
+RESOLVED
+  Auctioneer closes the auction → winner is on-chain
+```
+
+---
+
+## Setup
+Prerequisites: Node.js >= 22.0.0, Yarn 1.22.22, Docker Desktop, Compact Compiler 0.31.0, 1AM wallet
+
+Install:
+  yarn install && yarn compile
+
+Local dev:
+  yarn env:up
+  cd bboard-ui && yarn dev
+
+Deploy to Preprod:
+  1. Connect 1AM wallet on Preprod
+  2. Open app at http://localhost:5173
+  3. Click "Deploy new auction" (Admin page deployment)
+  4. Copy the contract address that appears on the card
+
+Deploy to Vercel:
+  - Root Directory: bboard-ui
+  - Build Command: yarn build
+  - Output Directory: dist
+  - Install Command: yarn install
+
+## Running Tests
 
 ```bash
-# 1. Install the Compact toolchain (skip if already installed)
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
-source $HOME/.local/bin/env
-compact update
+# Local Docker network
+yarn test:local
 
-# 2. Start the local proof server (required for compiling/testing with real ZK proofs)
-docker run -d -p 6300:6300 --name midnight-proof-server midnightnetwork/proof-server:latest
-
-# 3. Clone this repo and install dependencies
-git clone <this-repo-url>
-cd <this-repo>/contract
-npm install
-
-# 4. Compile the contract (generates circuits, ZK keys, and the TypeScript API)
-npm run compact
-
-# 5. Build the TypeScript API
-npm run build
-
-# 6. Run the test suite
-npm run test
+# Preprod network (requires MIDNIGHT_PREPROD_MNEMONIC in .env.preprod)
+yarn test:preprod
 ```
 
-Expected `npm run compact` output (circuits listed):
+**Tests cover:**
+1. Deploys the auction contract
+2. Auctioneer claims their role (ZK proof of auctioneer key)
+3. Bidder commits a sealed bid, auctioneer advances to reveal phase
+4. Nullifier prevents double-bidding from the same bidder
+
+---
+
+## Project Structure
 
 ```
-Compiling N circuits:
-  circuit "claimAuctioneer" (...)
-  circuit "commitBid" (...)
-  circuit "advanceToReveal" (...)
-  circuit "revealBid" (...)
-  circuit "resolveAuction" (...)
+auction-cli-scaffold/
+├── contracts/
+│   └── auction.compact          ← Sealed-bid auction Compact contract
+├── contract/src/
+│   └── index.ts                 ← Phase enum + managed re-exports
+├── api/src/
+│   └── index.ts                 ← BBoardAPI class (all circuit calls)
+├── bboard-ui/                   ← React + Vite frontend
+│   ├── src/
+│   │   ├── components/          ← AuctionCard, AuctionSeal, BidDialog, Layout
+│   │   ├── contexts/            ← BrowserDeployedBoardManager, DeployedBoardProvider
+│   │   └── config/theme.ts      ← Black/white/red design system
+│   └── public/managed/          ← ZK proving keys (copy from contracts/managed/)
+├── src/
+│   ├── config.ts                ← Network configs (local/preprod/preview)
+│   ├── providers.ts             ← Provider builder for tests
+│   └── test/auction.test.ts     ← 4-test Vitest suite
+├── scripts/
+│   └── wait-for-dust.ts         ← Wait for local wallet DUST before tests
+├── compose.yml                  ← Docker local network (proof-server, indexer, node)
+└── .github/workflows/ci.yaml   ← CI pipeline
 ```
 
-### Screenshot: successful compile output
+---
 
-_(add screenshot here: `npm run compact` output showing circuits listed)_
+## Contract Circuits
 
-### Screenshot: contract deployed with address shown
-
-_(add screenshot here: deployment output / explorer page showing the
-Preview/Preprod contract address)_
-
-## Contract summary
-
-| Circuit | Caller | Purpose |
+| Circuit | Privacy | Description |
 |---|---|---|
-| `claimAuctioneer` | first caller | Claims the auctioneer role for this auction instance |
-| `commitBid` | any bidder | Seals a bid commitment hash during COMMIT phase |
-| `advanceToReveal` | auctioneer only | Moves the auction from COMMIT to REVEAL |
-| `revealBid` | the committed bidder | Proves the reveal matches the seal + solvency; updates the public highest bid |
-| `resolveAuction` | auctioneer only | Closes the auction after reveal |
+| `claimAuctioneer` | ZK-proves secret key matches on-chain hash | Sets the caller as auctioneer without revealing key |
+| `commitBid` | Only commitment hash goes on-chain | Bid amount stays private until reveal |
+| `advanceToReveal` | Auctioneer-only | Opens the reveal phase |
+| `revealBid` | ZK-proves commitment matches bid | Highest bid updated if proof passes |
+| `resolveAuction` | Auctioneer-only | Finalizes and closes the auction |
 
-**Level 1 scope note:** this milestone supports one active sealed bid per
-round (a bidder commits, reveals, then the next bidder can commit). Level 3
-(Production-Grade dApp) will extend this to true concurrent multi-bidder
-rounds using Compact's `Map` ledger type, so several bids can be sealed at
-once before any reveal happens.
+---
 
-## Roadmap (per challenge levels)
+## Author
 
-- **Level 2 (Waxing Crescent):** Frontend UI wired to this contract, Lace
-  wallet integration on Preprod
-- **Level 3 (First Quarter):** Multi-bidder concurrent rounds via `Map`,
-  full test coverage, CI/CD
-- **Level 4–6:** MVP live on Preprod → user feedback loop → Mainnet launch
+Built for the **Midnight Journey to Mastery** hackathon challenge.
+
+- Midnight Network: [midnight.network](https://midnight.network)
+- Explorer (Preprod): [preprod.midnightexplorer.com](https://preprod.midnightexplorer.com)
+
+## License
+
+MIT

@@ -1,7 +1,14 @@
 node_modules/
 dist/
+.env.preprod
+.env.preview
 *.log
-.env
-.env.*
-!.env.example
-.DS_Store
+midnight-level-db/
+compactc_linux/
+*.zip
+err_*.log
+out_*.log
+
+# DO NOT ignore — these must be committed for CI to work:
+# bboard-ui/src/managed/    <- TypeScript contract types for React
+# bboard-ui/public/managed/ <- ZK proving keys served at /managed/

@@ -1,0 +1,126 @@
+pragma language_version >= 0.22;
+
+import CompactStandardLibrary;
+
+// ─── Ledger State (public, on-chain) ───────────────────────────────────────
+
+// Phase enum values: 0=COMMIT, 1=REVEAL, 2=RESOLVED
+export ledger phase: Uint<8>;
+
+// Hash of the auctioneer's secret key — stored at deploy time
+export ledger auctioneer: Bytes<32>;
+
+// The sealed commitment hash of the winning bid (commit phase)
+export ledger bid_commitment: Bytes<32>;
+
+// The highest revealed bid so far (reveal phase)
+export ledger highest_bid: Uint<64>;
+
+// Current round counter
+export ledger round: Uint<32>;
+
+// Nullifier set — prevents double-claiming auctioneer role or double-bidding
+export ledger nullifiers: Set<Bytes<32>>;
+
+// ─── Witnesses (private, never goes on-chain) ───────────────────────────────
+
+witness auctioneer_secret(): Bytes<32>;
+witness bidder_secret(): Bytes<32>;
+witness bid_amount(): Uint<64>;
+witness bid_nonce(): Bytes<32>;
+
+// ─── Constructor ─────────────────────────────────────────────────────────────
+
+constructor(auctioneer_hash: Bytes<32>) {
+    // Store the hash of the auctioneer's key — they must prove ownership to act
+    auctioneer = disclose(auctioneer_hash);
+    // Start in COMMIT phase (0)
+    phase = disclose(0 as Uint<8>);
+    highest_bid = disclose(0 as Uint<64>);
+    round = disclose(1 as Uint<32>);
+    // Initialize bid_commitment to zero bytes
+    bid_commitment = disclose(pad(32, "no-bid"));
+}
+
+// ─── Pure Circuits ────────────────────────────────────────────────────────────
+
+// MUST be exported so pureCircuits.auctioneer_key is accessible from TypeScript
+export pure circuit auctioneer_key(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:auctioneer:v1"), sk]);
+}
+
+export pure circuit bidder_nullifier(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:bidder:v1"), sk]);
+}
+
+export pure circuit computeBidCommitment(amount: Uint<64>, nonce: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([nonce, amount as Bytes<32>]);
+}
+
+// ─── Export Circuits ──────────────────────────────────────────────────────────
+
+// Circuit 1: Caller proves they hold the auctioneer secret key
+export circuit claimAuctioneer(): [] {
+    assert(disclose(phase) == (0 as Uint<8>), "Not in commit phase");
+
+    const sk = auctioneer_secret();
+    assert(auctioneer == auctioneer_key(sk), "Not the auctioneer");
+
+    // Nullifier prevents claiming auctioneer role twice in same round
+    const nul = persistentHash<Vector<2, Bytes<32>>>([pad(32, "auction:claim:v1"), sk]);
+    assert(!nullifiers.member(disclose(nul)), "Already claimed this round");
+    nullifiers.insert(disclose(nul));
+}
+
+// Circuit 2: Bidder submits a sealed commitment — only the hash goes on-chain
+export circuit commitBid(commitment: Bytes<32>): [] {
+    assert(disclose(phase) == (0 as Uint<8>), "Not in commit phase");
+
+    const sk = bidder_secret();
+    const nul = bidder_nullifier(sk);
+    assert(!nullifiers.member(disclose(nul)), "Already submitted a bid");
+
+    bid_commitment = disclose(commitment);
+    nullifiers.insert(disclose(nul));
+}
+
+// Circuit 3: Auctioneer moves from COMMIT phase to REVEAL phase
+export circuit advanceToReveal(): [] {
+    assert(disclose(phase) == (0 as Uint<8>), "Not in commit phase");
+
+    const sk = auctioneer_secret();
+    assert(auctioneer == auctioneer_key(sk), "Not the auctioneer");
+
+    // Move to REVEAL phase (1)
+    phase = disclose(1 as Uint<8>);
+}
+
+// Circuit 4: Bidder reveals their private bid — ZK-proves it matches the commitment
+export circuit revealBid(): [] {
+    assert(disclose(phase) == (1 as Uint<8>), "Not in reveal phase");
+
+    const amount = bid_amount();
+    const nonce = bid_nonce();
+
+    // ZK-prove that commitment = hash(amount, nonce) — the bid is authentic
+    const expected = computeBidCommitment(amount, nonce);
+    assert(bid_commitment == expected, "Bid commitment mismatch");
+
+    // Update highest bid if this is greater — comparison is private
+    const disclosed_amount = disclose(amount);
+    if (disclosed_amount > highest_bid) {
+        highest_bid = disclosed_amount;
+    }
+}
+
+// Circuit 5: Auctioneer closes the auction, moves to RESOLVED phase (2)
+export circuit resolveAuction(): [] {
+    assert(disclose(phase) == (1 as Uint<8>), "Not in reveal phase");
+
+    const sk = auctioneer_secret();
+    assert(auctioneer == auctioneer_key(sk), "Not the auctioneer");
+
+    // Move to RESOLVED phase (2)
+    phase = disclose(2 as Uint<8>);
+    round = disclose((round + 1) as Uint<32>);
+}

@@ -1,0 +1,41 @@
+{
+  "name": "auction-cli-scaffold",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.0.0" },
+  "scripts": {
+    "compile": "compact compile contracts/auction.compact contracts/managed/auction",
+    "copy:managed:unix": "mkdir -p bboard-ui/src/managed && mkdir -p bboard-ui/public/managed && cp -r contracts/managed/auction/contract bboard-ui/src/managed/contract && cp -r contracts/managed/auction bboard-ui/public/managed",
+    "copy:managed:win": "xcopy /E /I /Y contracts\\managed\\auction\\contract bboard-ui\\src\\managed\\contract && xcopy /E /I /Y contracts\\managed\\auction bboard-ui\\public\\managed",
+    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' vitest run",
+    "test:local": "cross-env MIDNIGHT_NETWORK=local yarn test",
+    "test:preprod": "cross-env MIDNIGHT_NETWORK=preprod yarn test",
+    "env:up": "docker compose up -d --wait",
+    "env:down": "docker compose down"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/testkit-js": "4.1.1",
+    "@midnight-ntwrk/wallet-sdk": "1.0.0",
+    "pino": "^9.0.0",
+    "pino-pretty": "^13.0.0",
+    "rxjs": "^7.8.2",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.9",
+    "cross-env": "^10.1.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.0"
+  },
+  "packageManager": "yarn@1.22.22"
+}
