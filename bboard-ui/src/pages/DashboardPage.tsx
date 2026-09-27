@@ -88,9 +88,6 @@ export const DashboardPage = () => {
         compiledContract,
         circuitId: action,
         args,
-        privateStateId: 'DashboardState',
-        initialPrivateState: privateState,
-        signingKey: sampleSigningKey(),
       });
 
       await submitTxAsync(session.providers as any, {
@@ -138,7 +135,7 @@ export const DashboardPage = () => {
       {contractLedger && (
         <Grid container spacing={4}>
           {/* Asset Visualization */}
-          <Grid item xs={12} md={5}>
+          <Grid xs={12} md={5}>
             <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(204,255,0,0.1)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ width: 150, height: 150, mb: 4, borderRadius: '20px', background: 'linear-gradient(135deg, rgba(204,255,0,0.2), rgba(77,166,255,0.2))', border: '1px dashed rgba(204,255,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Typography sx={{ color: '#ccff00', fontFamily: 'Instrument Serif', fontSize: '3rem' }}>?</Typography>
@@ -149,7 +146,7 @@ export const DashboardPage = () => {
           </Grid>
 
           {/* Bidding Controls */}
-          <Grid item xs={12} md={7}>
+          <Grid xs={12} md={7}>
             <Paper elevation={24} sx={{ p: 4, borderRadius: 4, background: 'rgba(20,20,30,0.9)', border: '1px solid rgba(255,255,255,0.05)', color: 'white', height: '100%' }}>
               
               {/* Winner Podium */}

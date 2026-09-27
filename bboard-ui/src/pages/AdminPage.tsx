@@ -42,13 +42,6 @@ export const AdminPage = () => {
       const deployTxData = await createUnprovenDeployTx(session.providers as any, {
         compiledContract,
         args: [adminHash],
-        privateStateId: 'DeployerState',
-        initialPrivateState: {
-          auctioneer_secret: adminSk,
-          bidder_secret: new Uint8Array(32),
-          bid_amount: 0n,
-          bid_nonce: new Uint8Array(32),
-        },
         signingKey: sampleSigningKey(),
       });
 

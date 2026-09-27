@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, Container, Grid } from '@mui/material';
+import { Box, Typography, Button, Paper, Container, Grid, Stack } from '@mui/material';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { MainLayout } from './components';
 import { AdminPage } from './pages/AdminPage';
@@ -182,7 +182,7 @@ const Home: React.FC = () => {
         
         <Grid container spacing={3}>
           {recentAuctions.map((auction, i) => (
-            <Grid item xs={12} md={4} key={i}>
+            <Grid xs={12} md={4} key={i}>
               <Paper 
                 onClick={() => auction.address !== '0x...' && navigate(`/dashboard?address=${auction.address}`)}
                 sx={{ 
