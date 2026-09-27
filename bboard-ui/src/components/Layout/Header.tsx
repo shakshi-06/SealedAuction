@@ -39,24 +39,13 @@ export const Header: React.FC = () => {
         px: 3,
       }}>
         {/* Logo */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer' }} onClick={() => navigate('/')}>
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
           <Box 
             component="img" 
             src="/logo.png" 
             alt="SealedAuction Logo" 
-            sx={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} 
+            sx={{ width: 140, height: 'auto', objectFit: 'contain', borderRadius: '8px' }} 
           />
-          <Typography
-            sx={{
-              fontSize: '1.2rem',
-              fontWeight: 700,
-              color: '#fff',
-              fontFamily: 'Inter, sans-serif',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Sealed<span style={{ opacity: 0.7 }}>Auction</span>
-          </Typography>
         </Box>
 
         {/* Navigation */}
