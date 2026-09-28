@@ -1,15 +1,28 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { createUnprovenDeployTx, submitTxAsync } from '@midnight-ntwrk/midnight-js-contracts';
 import { sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
 import { Contract, pureCircuits } from '../managed/contract/index.js';
 import { useWallet } from '../contexts/WalletContext';
-import { Box, Typography, Button, Paper, CircularProgress, IconButton, Alert, Tooltip, Stack, useTheme } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { colors } from '../config/theme';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  IconButton,
+  Paper,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import { getOrCreateSecret } from '../utils/secrets';
-import { TextField } from '@mui/material';
 
 function getCompiledContract(state?: any) {
   const witnesses = {
@@ -24,9 +37,17 @@ function getCompiledContract(state?: any) {
   ) as any;
 }
 
-export const AdminPage = () => {
-  const theme = useTheme();
-  const { session, isConnected } = useWallet();
+const defaultTitle = 'Zero-Knowledge Artifact';
+const defaultDescription = 'A cryptographically sealed asset available for auction on Midnight.';
+const panelSx = {
+  border: `1px solid ${colors.line}`,
+  backgroundColor: 'rgba(255,255,255,0.025)',
+  boxShadow: 'none',
+};
+const monoSx = { fontFamily: '"DM Mono", monospace' };
+
+export const AdminPage: React.FC = () => {
+  const { session, isConnected, connect, isConnecting } = useWallet();
   const [status, setStatus] = useState<'idle' | 'deploying' | 'deployed' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<string | null>(null);
@@ -48,7 +69,6 @@ export const AdminPage = () => {
         args: [adminHash],
         signingKey: sampleSigningKey(),
       });
-
       const contractAddress = deployTxData.public.contractAddress;
 
       await submitTxAsync(session.providers as any, {
@@ -57,132 +77,160 @@ export const AdminPage = () => {
 
       setDeployedAddress(contractAddress);
       localStorage.setItem('DEPLOYED_CONTRACT_ADDRESS', contractAddress);
-      
-      // Save to recent auctions for the Explorer feed
+
       try {
         const existing = JSON.parse(localStorage.getItem('RECENT_AUCTIONS') || '[]');
         existing.unshift({
           address: contractAddress,
-          name: title || "Zero-Knowledge Artifact",
-          desc: desc || "A cryptographically sealed asset available for auction on Midnight.",
-          deployedAt: Date.now()
+          name: title || defaultTitle,
+          desc: desc || defaultDescription,
+          deployedAt: Date.now(),
         });
-        localStorage.setItem('RECENT_AUCTIONS', JSON.stringify(existing.slice(0, 20))); // Keep last 20
-      } catch (e) {}
+        localStorage.setItem('RECENT_AUCTIONS', JSON.stringify(existing.slice(0, 20)));
+      } catch (_error) {
+        // Deployment succeeded even if this browser-only feed cannot be updated.
+      }
 
       setStatus('deployed');
-    } catch (e: any) {
+    } catch (error: any) {
       setStatus('error');
-      setErrorMsg(e?.message ?? String(e));
+      setErrorMsg(error?.message ?? String(error));
     }
-  }, [session, isConnected]);
+  }, [session, isConnected, title, desc]);
 
-  if (!isConnected) {
-    return (
-      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
-        <Paper elevation={3} sx={{ p: 6, maxWidth: 500, textAlign: 'center', borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', backdropFilter: 'blur(10px)', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
-          <Typography variant="h5" color="text.primary" gutterBottom fontWeight="bold">
-            Admin Portal
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Please connect your 1AM wallet in the top right to access the deployment controls.
-          </Typography>
-        </Paper>
-      </Box>
-    );
-  }
+  const handleCopy = useCallback(() => {
+    if (!deployedAddress) return;
+    void navigator.clipboard.writeText(deployedAddress);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  }, [deployedAddress]);
 
   return (
-    <Box sx={{ maxWidth: '700px', margin: '0 auto', p: { xs: 2, md: 4 } }}>
-      <Paper elevation={24} sx={{ p: 5, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'linear-gradient(145deg, rgba(30,30,30,0.9), rgba(15,15,15,0.95))' : '#fff', backdropFilter: 'blur(20px)', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)' }}>
-        <Typography variant="h4" color="text.primary" fontWeight="800" gutterBottom>
-          Deploy Contract
+    <Container maxWidth="xl" sx={{ pt: { xs: 6, md: 10 }, pb: { xs: 8, md: 14 } }}>
+      <Box sx={{ maxWidth: 880, mb: { xs: 6, md: 9 } }}>
+        <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 11, letterSpacing: '0.14em', mb: 2 }}>
+          ADMIN / AUCTION ROOM CREATION
         </Typography>
-        <Typography variant="body1" color="text.secondary" mb={4}>
-          Deploy a fresh instance of the Sealed-Bid Auction contract to the Midnight Preprod Network. You will be assigned the Auctioneer role.
+        <Typography variant="h1" sx={{ color: colors.paper, fontSize: { xs: 44, md: 72 }, lineHeight: 0.98, mb: 3 }}>
+          Make the room before the bidding begins.
         </Typography>
+        <Typography sx={{ color: colors.muted, fontSize: { xs: 17, md: 20 }, lineHeight: 1.65, maxWidth: 700 }}>
+          Configure a sealed-bid auction, review its public presentation, then deploy a fresh contract to Midnight Preprod.
+          The contract is the source of auction state. Your editorial metadata is kept locally for the room feed.
+        </Typography>
+      </Box>
 
-        {(status === 'idle' || status === 'error') && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 4 }}>
-            <TextField label="Auction Title (Optional)" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth />
-            <TextField label="Description (Optional)" value={desc} onChange={(e) => setDesc(e.target.value)} multiline rows={3} fullWidth />
-            <Button 
-              variant="contained" 
-              size="large" 
-              onClick={handleDeploy} 
-              startIcon={<RocketLaunchIcon />}
-              sx={{ 
-                background: 'linear-gradient(90deg, #4da6ff, #0066cc)', 
-                color: 'white', 
-                px: 4, 
-                py: 1.5, 
-                borderRadius: 3,
-                fontWeight: 'bold',
-                textTransform: 'none',
-                fontSize: '1.1rem'
-              }}
-            >
-              Deploy to Preprod
-            </Button>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.15fr) minmax(360px, 0.85fr)' }, gap: { xs: 3, md: 5 }, alignItems: 'start' }}>
+        <Paper sx={{ ...panelSx, p: { xs: 3, md: 5 } }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="start" sx={{ mb: 5 }}>
+            <Box>
+              <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 1 }}>DEPLOYMENT BRIEF</Typography>
+              <Typography variant="h4" sx={{ color: colors.paper }}>Create an auction</Typography>
+            </Box>
+            <LockOutlinedIcon sx={{ color: colors.redSoft, mt: 0.5 }} />
+          </Stack>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 5 }}>
+            {[['01', 'Describe', 'Name the room.'], ['02', 'Review', 'Check the public card.'], ['03', 'Deploy', 'Publish on Preprod.']].map(([number, label, detail]) => (
+              <Box key={number} sx={{ borderTop: `2px solid ${number === '03' ? colors.red : colors.line}`, pt: 1.5 }}>
+                <Typography sx={{ ...monoSx, color: number === '03' ? colors.redSoft : colors.muted, fontSize: 11 }}>{number}</Typography>
+                <Typography sx={{ color: colors.paper, mt: 1, fontWeight: 600 }}>{label}</Typography>
+                <Typography sx={{ color: colors.quiet, fontSize: 12, mt: 0.5 }}>{detail}</Typography>
+              </Box>
+            ))}
           </Box>
-        )}
 
-        {status === 'deploying' && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', p: 3, borderRadius: 3 }}>
-            <CircularProgress size={24} sx={{ color: '#4da6ff' }} />
-            <Typography color="text.primary" fontWeight="bold">
-              Deploying... Check your 1AM wallet popup to sign the transaction.
-            </Typography>
-          </Box>
-        )}
-
-        {status === 'deployed' && deployedAddress && (
-          <Box sx={{ mt: 4, background: 'rgba(77, 166, 255, 0.1)', p: 4, borderRadius: 4, border: '1px solid rgba(77, 166, 255, 0.3)' }}>
-            <Typography variant="h6" color="#4da6ff" gutterBottom fontWeight="bold">
-              🎉 Contract Deployed Successfully!
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={1}>
-              Contract Address:
-            </Typography>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.05)', p: 2, borderRadius: 2 }}>
-              <Typography variant="body1" color="text.primary" sx={{ fontFamily: 'monospace', wordBreak: 'break-all', flexGrow: 1 }}>
-                {deployedAddress}
+          {(status === 'idle' || status === 'error') && (
+            <Box component="form" onSubmit={(event) => { event.preventDefault(); void handleDeploy(); }} sx={{ display: 'grid', gap: 2.5 }}>
+              <TextField
+                label="Auction title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="For example, Study in Red No. 4"
+                fullWidth
+                inputProps={{ maxLength: 100 }}
+              />
+              <TextField
+                label="Description"
+                value={desc}
+                onChange={(event) => setDesc(event.target.value)}
+                placeholder="A short note for bidders"
+                multiline
+                minRows={4}
+                fullWidth
+                inputProps={{ maxLength: 300 }}
+              />
+              <Typography sx={{ color: colors.quiet, fontSize: 12, lineHeight: 1.6 }}>
+                Both fields are optional. They label the room in this browser and are not constructor arguments in auction.compact.
               </Typography>
-              <Tooltip title={copied ? "Copied!" : "Copy Address"}>
-                <IconButton onClick={() => { navigator.clipboard.writeText(deployedAddress); setCopied(true); setTimeout(() => setCopied(false), 2000); }} sx={{ color: '#4da6ff' }}>
-                  <ContentCopyIcon />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-            <Stack direction="row" spacing={2} mt={3}>
-              <Button 
-                variant="contained"
-                href={`/dashboard?address=${deployedAddress}&title=${encodeURIComponent(title || "Zero-Knowledge Artifact")}&desc=${encodeURIComponent(desc || "A cryptographically sealed asset available for auction on Midnight.")}`}
-                sx={{ background: '#4da6ff', color: '#000', fontWeight: 'bold' }}
-              >
-                Go to Dashboard
-              </Button>
-              <Button 
-                href={`https://preprod.midnightexplorer.com/contracts/${deployedAddress}`} 
-                target="_blank" 
-                endIcon={<OpenInNewIcon />}
-                sx={{ color: '#4da6ff' }}
-              >
-                View Explorer
-              </Button>
-            </Stack>
-          </Box>
-        )}
 
-        {status === 'error' && errorMsg && (
-          <Alert severity="error" sx={{ mt: 4, borderRadius: 2 }}>
-            <Typography variant="subtitle1" fontWeight="bold">Deployment Failed</Typography>
-            <Typography variant="body2" sx={{ fontFamily: 'monospace', mt: 1, wordBreak: 'break-all' }}>
-              {errorMsg}
+              {!isConnected ? (
+                <Button variant="contained" onClick={() => void connect('preprod')} disabled={isConnecting} startIcon={isConnecting ? <CircularProgress size={16} color="inherit" /> : <LockOutlinedIcon />} sx={{ justifySelf: 'start', mt: 1 }}>
+                  {isConnecting ? 'Connecting wallet' : 'Connect wallet to deploy'}
+                </Button>
+              ) : (
+                <Button type="submit" variant="contained" startIcon={<RocketLaunchOutlinedIcon />} sx={{ justifySelf: 'start', mt: 1 }}>
+                  Deploy to Preprod
+                </Button>
+              )}
+            </Box>
+          )}
+
+          {status === 'deploying' && (
+            <Box sx={{ border: `1px solid ${colors.line}`, p: 2.5, display: 'flex', gap: 2, alignItems: 'center' }}>
+              <CircularProgress size={18} sx={{ color: colors.redSoft }} />
+              <Typography sx={{ color: colors.paper, fontSize: 14 }}>Waiting for the wallet to sign and submit the deployment.</Typography>
+            </Box>
+          )}
+
+          {status === 'error' && errorMsg && (
+            <Alert severity="error" sx={{ mt: 3, borderRadius: 0, backgroundColor: 'rgba(179,38,45,0.12)', color: colors.paper }}>
+              <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Deployment failed</Typography>
+              <Typography sx={{ ...monoSx, fontSize: 11, wordBreak: 'break-word' }}>{errorMsg}</Typography>
+            </Alert>
+          )}
+
+          {status === 'deployed' && deployedAddress && (
+            <Box sx={{ mt: 2, border: `1px solid ${colors.red}`, p: { xs: 2.5, md: 3 }, backgroundColor: 'rgba(179,38,45,0.09)' }}>
+              <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 1 }}>DEPLOYMENT SUBMITTED</Typography>
+              <Typography sx={{ color: colors.paper, fontSize: 18, mb: 2 }}>Your room has an address.</Typography>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ border: `1px solid ${colors.line}`, backgroundColor: colors.ink, p: 1.5 }}>
+                <Typography sx={{ ...monoSx, color: colors.paper, fontSize: 11, wordBreak: 'break-all', flexGrow: 1 }}>{deployedAddress}</Typography>
+                <Tooltip title={copied ? 'Copied' : 'Copy address'}>
+                  <IconButton onClick={handleCopy} aria-label="Copy contract address" size="small"><ContentCopyOutlinedIcon fontSize="small" /></IconButton>
+                </Tooltip>
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
+                <Button variant="contained" href={`/dashboard?address=${deployedAddress}&title=${encodeURIComponent(title || defaultTitle)}&desc=${encodeURIComponent(desc || defaultDescription)}`} endIcon={<LaunchOutlinedIcon />}>Open dashboard</Button>
+                <Button variant="outlined" href={`https://preprod.midnightexplorer.com/contracts/${deployedAddress}`} target="_blank" rel="noreferrer" endIcon={<LaunchOutlinedIcon />}>View explorer</Button>
+              </Stack>
+            </Box>
+          )}
+        </Paper>
+
+        <Box sx={{ display: 'grid', gap: 3 }}>
+          <Paper sx={{ ...panelSx, p: { xs: 3, md: 4 } }}>
+            <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 3 }}>LIVE PREVIEW / PUBLIC CARD</Typography>
+            <Typography variant="h4" sx={{ color: colors.paper, mb: 1.5, overflowWrap: 'anywhere' }}>{title.trim() || defaultTitle}</Typography>
+            <Typography sx={{ color: colors.muted, lineHeight: 1.65, minHeight: 72, overflowWrap: 'anywhere' }}>{desc.trim() || defaultDescription}</Typography>
+            <Box sx={{ borderTop: `1px solid ${colors.line}`, mt: 4, pt: 2.5, display: 'grid', gap: 1.25 }}>
+              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: colors.quiet, fontSize: 12 }}>Network</Typography><Typography sx={{ ...monoSx, color: colors.paper, fontSize: 11 }}>MIDNIGHT PREPROD</Typography></Stack>
+              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: colors.quiet, fontSize: 12 }}>Phase</Typography><Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 11 }}>COMMIT</Typography></Stack>
+              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: colors.quiet, fontSize: 12 }}>Bids</Typography><Typography sx={{ ...monoSx, color: colors.paper, fontSize: 11 }}>SEALED</Typography></Stack>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ ...panelSx, p: { xs: 3, md: 4 } }}>
+            <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 2 }}>NETWORK NOTE</Typography>
+            <Typography sx={{ color: colors.paper, lineHeight: 1.65, fontSize: 14 }}>
+              Deployments use your connected wallet and Midnight Preprod. The title, description, and recent room list are browser-local metadata. They do not alter the contract ledger.
             </Typography>
-          </Alert>
-        )}
-      </Paper>
-    </Box>
+            <Typography sx={{ ...monoSx, color: colors.quiet, fontSize: 10, lineHeight: 1.7, mt: 2 }}>
+              LOCAL METADATA / RECENT_AUCTIONS
+            </Typography>
+          </Paper>
+        </Box>
+      </Box>
+    </Container>
   );
 };

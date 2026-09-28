@@ -21,7 +21,7 @@ export function fromHex(hex: string): Uint8Array {
 
 // PATCHED PUBLIC DATA PROVIDER
 // Fixes the known "offset: null" GraphQL bug on Preprod/Preview indexers.
-// ALWAYS use this in the browser — never use indexerPublicDataProvider directly.
+// ALWAYS use this in the browser. Never use indexerPublicDataProvider directly.
 export function createPatchedPublicDataProvider(queryUrl: string, subscriptionUrl: string) {
   const base = indexerPublicDataProvider(queryUrl, subscriptionUrl);
 
@@ -87,9 +87,9 @@ export type ConnectedSession = {
   unshieldedAddress: string;
 };
 
-// MAIN SESSION FACTORY — call after wallet.connect()
+// MAIN SESSION FACTORY. Call after wallet.connect()
 export async function createConnectedSession(api: any): Promise<ConnectedSession> {
-  // ALWAYS fetch in parallel — never await sequentially
+  // ALWAYS fetch in parallel. Never await sequentially
   const [config, unshieldedAddr, shieldedAddress] = await Promise.all([
     api.getConfiguration(),
     api.getUnshieldedAddress(),

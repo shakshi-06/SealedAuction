@@ -1,450 +1,200 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, Container, Grid, Stack, TextField, InputAdornment, LinearProgress, useTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { Box, Button, Chip, CircularProgress, Container, InputAdornment, LinearProgress, Paper, Stack, TextField, Typography } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import { MainLayout } from './components';
 import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { VerifyPage } from './pages/VerifyPage';
 import { useWallet } from './contexts/WalletContext';
-import GavelIcon from '@mui/icons-material/Gavel';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+
+const red = '#B3262D';
+const paper = '#F4F1EC';
+const muted = '#A8A39D';
+const line = '#2A2928';
+
+const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown>; className?: string; onClick?: React.MouseEventHandler<HTMLDivElement> }>> = ({ children, sx, className, onClick }) => (
+  <Paper className={className} onClick={onClick} elevation={0} sx={{ background: 'rgba(20,19,19,0.86)', border: `1px solid ${line}`, borderRadius: 0, ...sx }}>
+    {children}
+  </Paper>
+);
 
 const Home: React.FC = () => {
-  const theme = useTheme();
-  const { isConnected, connect } = useWallet();
   const navigate = useNavigate();
+  const { isConnected, connect } = useWallet();
   const [recentAuctions, setRecentAuctions] = useState<any[]>([]);
-
-  // ZK Playground state
   const [mockBid, setMockBid] = useState('');
   const [isProving, setIsProving] = useState(false);
   const [proofResult, setProofResult] = useState('');
 
-  const handleSimulateProof = () => {
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('RECENT_AUCTIONS') || '[]');
+      setRecentAuctions(saved.slice(0, 3));
+    } catch {
+      setRecentAuctions([]);
+    }
+  }, []);
+
+  const simulateProof = () => {
     if (!mockBid) return;
     setIsProving(true);
     setProofResult('');
-    setTimeout(() => {
+    window.setTimeout(() => {
       setIsProving(false);
-      const fakeHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-      setProofResult('0x' + fakeHash);
-    }, 2400);
+      setProofResult(`0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`);
+    }, 1600);
   };
-
-  useEffect(() => {
-    try {
-      const existing = JSON.parse(localStorage.getItem('RECENT_AUCTIONS') || '[]');
-      if (existing.length > 0) {
-        setRecentAuctions(existing);
-      } else {
-        // Mock some for preview if empty
-        setRecentAuctions([
-          { name: 'Zero-Knowledge Artifact', address: '0x...', deployedAt: Date.now() - 3600000 },
-          { name: 'Midnight Genesis Grant', address: '0x...', deployedAt: Date.now() - 7200000 }
-        ]);
-      }
-    } catch (e) {}
-  }, []);
 
   return (
     <>
-      {/* Live Network Scrolling Ticker */}
-      <Box sx={{ width: '100%', background: '#ccff00', color: '#000', py: 1.5, overflow: 'hidden', whiteSpace: 'nowrap', display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <Box sx={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 4, minWidth: '200%' }}>
-          {[...Array(6)].map((_, i) => (
-            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Typography sx={{ fontWeight: 800, fontFamily: 'Inter', fontSize: '0.85rem', letterSpacing: '0.05em' }}>NETWORK: MIDNIGHT PREPROD <span style={{ color: '#d32f2f', fontWeight: 'bold' }}>● LIVE</span></Typography>
-              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>PRIVACY MODEL: ZERO-KNOWLEDGE CRYPTOGRAPHY</Typography>
-              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>PROVER: LOCAL CLIENT WASM</Typography>
-              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>SECURITY: NON-CUSTODIAL &middot; ZERO LEAKS</Typography>
-              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>&middot;</Typography>
-            </Box>
+      <Box sx={{ borderBottom: `1px solid ${line}`, overflow: 'hidden', whiteSpace: 'nowrap', background: '#111010' }}>
+        <Box sx={{ display: 'inline-flex', minWidth: '200%', animation: 'marquee 32s linear infinite', py: 1.2 }}>
+          {[0, 1, 2, 3].map((item) => (
+            <Typography key={item} sx={{ px: 5, color: '#8D8882', fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em' }}>
+              MIDNIGHT PREPROD <span style={{ color: red }}>●</span> COMMIT REVEAL RESOLVE <span style={{ color: '#5F5A56' }}>/</span> PRIVATE BY DESIGN
+            </Typography>
           ))}
         </Box>
       </Box>
 
-      <Container maxWidth="lg" sx={{ mt: { xs: 8, md: 12 }, px: { xs: 2, md: 4 }, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-      <Box sx={{ maxWidth: { xs: '100%', md: '55%' }, mb: 8 }}>
-        <Typography 
-          component="h1"
-          sx={{ 
-            color: 'text.primary', 
-            fontSize: { xs: '3.5rem', md: '5.5rem' }, 
-            lineHeight: 1, 
-            letterSpacing: '-0.03em',
-            mb: 4
-          }}
-        >
-          <span style={{ fontFamily: 'Inter', fontWeight: 700 }}>Auctions </span>
-          <br />
-          <span style={{ fontFamily: 'Inter', fontWeight: 700 }}>for the </span>
-          <span style={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', color: '#ffb74d' }}>quietly </span>
-          <br />
-          <span style={{ fontFamily: 'Instrument Serif', fontWeight: 400 }}>strategic.</span>
-        </Typography>
-
-        <Typography sx={{ fontFamily: 'Inter', color: 'text.secondary', fontSize: '1.2rem', maxWidth: 450, mb: 6, lineHeight: 1.6 }}>
-          SealedAuction is a private passage through the bidding process: prove you have the funds and submit your bid without handing your strategy to a server.
-        </Typography>
-
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          {!isConnected ? (
-            <Button
-              variant="contained"
-              onClick={() => connect()}
-              sx={{
-                background: '#ccff00',
-                color: '#000',
-                fontWeight: 600,
-                fontSize: '1rem',
-                fontFamily: 'Inter',
-                px: 4, py: 1.5,
-                borderRadius: '12px',
-                textTransform: 'none',
-                '&:hover': { background: '#aacc00' }
-              }}
-            >
-              Connect wallet &rarr;
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={() => navigate('/dashboard')}
-              sx={{
-                background: '#ccff00',
-                color: '#000',
-                fontWeight: 600,
-                fontSize: '1rem',
-                fontFamily: 'Inter',
-                px: 4, py: 1.5,
-                borderRadius: '12px',
-                textTransform: 'none',
-                '&:hover': { background: '#aacc00' }
-              }}
-            >
-              Enter dashboard &rarr;
-            </Button>
-          )}
-
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/admin')}
-            sx={{
-              borderColor: 'text.secondary',
-              color: 'text.primary',
-              fontWeight: 500,
-              fontSize: '1rem',
-              fontFamily: 'Inter',
-              px: 4, py: 1.5,
-              borderRadius: '12px',
-              textTransform: 'none',
-              '&:hover': { background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', borderColor: 'text.primary' }
-            }}
-          >
-            Deploy contract &nearr;
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Floating Graphic Element mimicking the 3D sphere from zkScholar */}
-      <Box sx={{ width: { xs: '100%', md: '40%' }, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ 
-          width: 300, height: 300, 
-          borderRadius: '50%', 
-          border: '1px solid rgba(204, 255, 0, 0.3)',
-          position: 'relative',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            width: 340, height: 340,
-            borderRadius: '50%',
-            border: '1px dashed rgba(77, 166, 255, 0.4)',
-            transform: 'rotate(15deg)',
-          },
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            width: 200, height: 200,
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, rgba(77, 166, 255, 0.2), rgba(204, 255, 0, 0.1))',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            transform: 'rotate(-10deg)',
-          }
-        }}>
-          {/* Signal Integrity Widget */}
-          <Paper elevation={0} sx={{ 
-            position: 'absolute', top: -20, right: -40, 
-            background: theme.palette.mode === 'dark' ? 'rgba(15,15,15,0.9)' : 'rgba(255,255,255,0.9)', 
-            border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-            p: 1.5, borderRadius: '8px',
-            zIndex: 10
-          }}>
-            <Typography sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary, fontWeight: 700, letterSpacing: '0.1em', mb: 0.5 }}>BID INTEGRITY</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: theme.palette.primary.main }} />
-              <Typography sx={{ fontSize: '0.9rem', color: 'text.primary', fontWeight: 600, fontFamily: 'Inter' }}>100% private</Typography>
-            </Box>
-          </Paper>
-
-          {/* Current Atmosphere Widget */}
-          <Paper elevation={0} sx={{ 
-            position: 'absolute', bottom: -20, left: -20, 
-            background: theme.palette.mode === 'dark' ? 'rgba(15,15,15,0.9)' : 'rgba(255,255,255,0.9)', 
-            border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-            p: 1.5, borderRadius: '8px',
-            zIndex: 10
-          }}>
-            <Typography sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary, fontWeight: 700, letterSpacing: '0.1em', mb: 0.5 }}>CURRENT NETWORK</Typography>
-            <Typography sx={{ fontSize: '0.9rem', color: 'text.primary', fontWeight: 600, fontFamily: 'Inter' }}>Midnight / preprod</Typography>
-          </Paper>
-        </Box>
-      </Box>
-
-      {/* ZK Stat Cards */}
-      <Box sx={{ width: '100%', mt: 12, mb: 4 }}>
-        <Grid container spacing={3}>
-          {/* Stat Card 1 */}
-          <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-            <Paper sx={{ p: 4, borderRadius: '24px', width: '100%', height: '100%', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#fafafa' } }}>
-              <Typography sx={{ color: theme.palette.primary.main, fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>100<span style={{ fontSize: '2rem' }}>%</span></Typography>
-              <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Client-Side Privacy</Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', fontFamily: 'Inter' }}>Your bid data never touches our servers. It is strictly kept on your device.</Typography>
-            </Paper>
-          </Grid>
-          
-          {/* Stat Card 2 */}
-          <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-            <Paper sx={{ p: 4, borderRadius: '24px', width: '100%', height: '100%', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#fafafa' } }}>
-              <Typography sx={{ color: theme.palette.primary.main, fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>&lt; 2.5<span style={{ fontSize: '2rem' }}>s</span></Typography>
-              <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>WASM Proof Gen</Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', fontFamily: 'Inter' }}>High-speed local circuit execution to synthesize zero-knowledge proofs instantly.</Typography>
-            </Paper>
-          </Grid>
-
-          {/* Stat Card 3 */}
-          <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-            <Paper sx={{ p: 4, borderRadius: '24px', width: '100%', height: '100%', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#fafafa' } }}>
-              <Typography sx={{ color: theme.palette.primary.main, fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>Zero</Typography>
-              <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Information Leakage</Typography>
-              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', fontFamily: 'Inter' }}>The smart contract blindly verifies your bid through ZK-SNARK math assertions.</Typography>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* Interactive ZK Playground */}
-      <Box sx={{ width: '100%', mt: 8, mb: 12, p: 6, borderRadius: '24px', background: theme.palette.mode === 'dark' ? 'linear-gradient(145deg, rgba(20,20,20,0.8), rgba(10,10,10,0.9))' : 'linear-gradient(145deg, #ffffff, #f5f5f5)', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', position: 'relative', overflow: 'hidden', boxShadow: theme.palette.mode === 'light' ? '0 10px 40px rgba(0,0,0,0.05)' : 'none' }}>
-        <Box sx={{ position: 'absolute', top: '-50%', left: '-20%', width: '50%', height: '200%', background: theme.palette.mode === 'dark' ? 'radial-gradient(ellipse at center, rgba(204,255,0,0.05) 0%, transparent 70%)' : 'radial-gradient(ellipse at center, rgba(170,204,0,0.1) 0%, transparent 70%)', zIndex: 0 }} />
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={8} alignItems="center">
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.1em', mb: 1 }}>INTERACTIVE ZK PLAYGROUND</Typography>
-              <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', fontStyle: 'italic', mb: 2 }}>
-                See zero-knowledge in action
+      <Container maxWidth="xl" sx={{ pt: { xs: 8, md: 13 }, pb: { xs: 8, md: 15 } }}>
+        <Grid container spacing={{ xs: 7, md: 10 }} alignItems="center">
+          <Grid item xs={12} md={7}>
+            <Stack spacing={3} sx={{ animation: 'revealUp 0.7s ease both' }}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Box sx={{ width: 8, height: 8, background: red }} />
+                <Typography sx={{ color: '#D95C61', fontFamily: '"DM Mono", monospace', fontSize: 11, letterSpacing: '0.13em' }}>SEALED-BID AUCTIONS</Typography>
+              </Stack>
+              <Typography component="h1" sx={{ maxWidth: 770, fontSize: { xs: '3.5rem', sm: '5rem', md: '6.8rem' }, lineHeight: 0.94, color: paper }}>
+                The price stays <Box component="span" sx={{ color: '#D95C61' }}>private.</Box>
+                <br />
+                The result stays <Box component="span" sx={{ fontStyle: 'italic', fontWeight: 500 }}>provable.</Box>
               </Typography>
-              <Typography sx={{ color: 'text.secondary', fontFamily: 'Inter', mb: 4, lineHeight: 1.6 }}>
-                Enter a mock bid amount to see how the Midnight Network processes your data. Your plaintext bid never leaves this browser window. Instead, a local WASM circuit mathematically hashes it into an irrefutable Pedersen Commitment.
+              <Typography sx={{ maxWidth: 570, color: muted, fontSize: { xs: 17, md: 20 }, lineHeight: 1.6 }}>
+                A confidential auction room built on Midnight. Commit your offer without showing your strategy, then prove the bid is authentic when the room opens.
               </Typography>
-              
-              <Box sx={{ background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', p: 3, borderRadius: '16px', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
-                <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PRIVATE INPUT (STAYS ON DEVICE)</Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField 
-                    fullWidth 
-                    variant="outlined" 
-                    placeholder="Enter bid amount" 
-                    value={mockBid}
-                    onChange={(e) => setMockBid(e.target.value)}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start" sx={{ color: 'text.secondary' }}>$</InputAdornment>,
-                      sx: { color: 'text.primary', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', fontFamily: 'IBM Plex Mono' }
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' },
-                      '& .Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.primary.main }
-                    }}
-                  />
-                  <Button 
-                    variant="contained" 
-                    onClick={handleSimulateProof}
-                    disabled={isProving || !mockBid}
-                    sx={{ 
-                      background: theme.palette.primary.main, color: theme.palette.mode === 'dark' ? '#000' : '#fff', fontWeight: 600, fontFamily: 'Inter', minWidth: 140,
-                      '&:hover': { background: theme.palette.mode === 'dark' ? '#aacc00' : theme.palette.primary.dark },
-                      '&.Mui-disabled': { background: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.2)' : 'rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.5)' }
-                    }}
-                  >
-                    {isProving ? 'Proving...' : 'Generate Proof'}
-                  </Button>
-                </Box>
-                
-                {isProving && (
-                  <Box sx={{ mt: 3 }}>
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', fontFamily: 'Inter', mb: 1, display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Synthesizing ZK-SNARK...</span>
-                      <span style={{ color: theme.palette.primary.main }}>Local WASM Circuit</span>
-                    </Typography>
-                    <LinearProgress sx={{ background: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { background: theme.palette.primary.main } }} />
-                  </Box>
-                )}
-                
-                {proofResult && (
-                  <Box sx={{ mt: 3, p: 2, borderRadius: '8px', background: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.05)' : 'rgba(170,204,0,0.05)', border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.2)' : 'rgba(170,204,0,0.2)'}` }}>
-                    <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PUBLIC ON-CHAIN COMMITMENT (BROADCASTED)</Typography>
-                    <Typography sx={{ color: 'text.primary', fontFamily: 'IBM Plex Mono', fontSize: '0.85rem', wordBreak: 'break-all' }}>
-                      {proofResult}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </Box>
-            <Box sx={{ flex: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
-              {/* Graphic representation of the proof process */}
-              <Box sx={{ position: 'relative', width: 280, height: 280, border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Box sx={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', borderTop: `2px solid ${theme.palette.primary.main}`, animation: 'spin 4s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
-                <Typography sx={{ color: 'text.primary', fontFamily: 'IBM Plex Mono', fontSize: '2rem', fontWeight: 300 }}>ZK</Typography>
-                <Paper elevation={0} sx={{ position: 'absolute', top: -10, right: 20, background: theme.palette.primary.main, px: 1, py: 0.5, borderRadius: '4px' }}>
-                  <Typography sx={{ color: theme.palette.mode === 'dark' ? '#000' : '#fff', fontSize: '0.65rem', fontWeight: 800 }}>PROVER</Typography>
-                </Paper>
-              </Box>
-            </Box>
-          </Stack>
-        </Box>
-      </Box>
-
-      {/* Live Auctions Explorer Feed */}
-      <Box sx={{ width: '100%', mt: 8, pt: 8, borderTop: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
-          <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', fontStyle: 'italic' }}>
-            Saved & Deployed Auctions History
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: theme.palette.primary.main, boxShadow: `0 0 10px ${theme.palette.primary.main}` }} />
-            <Typography sx={{ color: theme.palette.primary.main, fontFamily: 'Inter', fontWeight: 600, fontSize: '0.9rem' }}>REAL-TIME</Typography>
-          </Box>
-        </Stack>
-        
-        <Grid container spacing={3}>
-          {recentAuctions.map((auction, i) => (
-            <Grid item xs={12} md={4} key={i} sx={{ display: 'flex' }}>
-              <Paper 
-                onClick={() => auction.address !== '0x...' && navigate(`/dashboard?address=${auction.address}&title=${encodeURIComponent(auction.name || '')}&desc=${encodeURIComponent(auction.desc || '')}`)}
-                sx={{ 
-                  p: 3, 
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  borderRadius: '16px', 
-                  background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', 
-                  border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
-                  cursor: auction.address !== '0x...' ? 'pointer' : 'default',
-                  transition: 'all 0.2s',
-                  '&:hover': auction.address !== '0x...' ? {
-                    background: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.05)' : 'rgba(170,204,0,0.05)',
-                    border: theme.palette.mode === 'dark' ? '1px solid rgba(204,255,0,0.3)' : '1px solid rgba(170,204,0,0.3)',
-                    transform: 'translateY(-4px)'
-                  } : {}
-                }}
-              >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.1rem' }}>{auction.name}</Typography>
-                  <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', fontFamily: 'Inter' }}>
-                    {Math.floor((Date.now() - auction.deployedAt) / 60000)}m ago
-                  </Typography>
-                </Box>
-                <Typography sx={{ color: 'text.secondary', fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all', mb: 3 }}>
-                  {auction.address}
-                </Typography>
-                <Button 
-                  variant="outlined" 
-                  fullWidth
-                  disabled={auction.address === '0x...'}
-                  sx={{ 
-                    color: theme.palette.primary.main, 
-                    borderColor: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.3)' : 'rgba(170,204,0,0.3)', 
-                    borderRadius: '8px',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontFamily: 'Inter',
-                    '&:hover': {
-                      borderColor: theme.palette.primary.main,
-                      background: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.1)' : 'rgba(170,204,0,0.1)'
-                    }
-                  }}
-                >
-                  Join Auction &rarr;
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ pt: 1 }}>
+                <Button variant="contained" endIcon={<ArrowForwardRoundedIcon />} onClick={() => isConnected ? navigate('/dashboard') : connect()} sx={{ minWidth: 172 }}>
+                  {isConnected ? 'Enter auction room' : 'Connect to begin'}
                 </Button>
-              </Paper>
-            </Grid>
-          ))}
+                <Button variant="outlined" onClick={() => navigate('/privacy')} sx={{ minWidth: 150 }}>Understand the model</Button>
+              </Stack>
+              <Stack direction="row" spacing={{ xs: 2, sm: 4 }} sx={{ pt: 3, flexWrap: 'wrap', rowGap: 1 }}>
+                {['No bid leakage', 'Client-side proofing', 'Open verification'].map((label) => (
+                  <Stack direction="row" spacing={1} alignItems="center" key={label}>
+                    <VerifiedOutlinedIcon sx={{ color: red, fontSize: 17 }} />
+                    <Typography sx={{ color: '#8D8882', fontSize: 12 }}>{label}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </Stack>
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <Surface sx={{ minHeight: { xs: 400, md: 500 }, p: { xs: 3, md: 4 }, position: 'relative', overflow: 'hidden', animation: 'revealUp 0.7s 0.12s ease both', '&::before': { content: '""', position: 'absolute', left: 0, right: 0, height: 1, background: red, opacity: 0.75, animation: 'scan 5s ease-in-out infinite' } }}>
+              <Stack justifyContent="space-between" sx={{ height: '100%', position: 'relative', zIndex: 1 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                  <Box>
+                    <Typography sx={{ color: muted, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>LIVE AUCTION ROOM</Typography>
+                    <Typography sx={{ color: paper, fontSize: 22, mt: 1 }}>Private artifact / 01</Typography>
+                  </Box>
+                  <Chip label="COMMIT OPEN" size="small" sx={{ color: '#D95C61', border: '1px solid #6D292D', background: 'rgba(179,38,45,0.1)' }} />
+                </Stack>
+                <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 230, position: 'relative' }}>
+                  <Box sx={{ width: 190, height: 190, border: '1px solid #403B38', transform: 'rotate(45deg)', animation: 'slowFloat 6s ease-in-out infinite', display: 'grid', placeItems: 'center' }}>
+                    <Box sx={{ width: 122, height: 122, border: '1px solid #B3262D', display: 'grid', placeItems: 'center', transform: 'rotate(-45deg)', background: 'rgba(179,38,45,0.06)' }}>
+                      <LockOutlinedIcon sx={{ color: '#D95C61', fontSize: 30 }} />
+                    </Box>
+                  </Box>
+                  <Typography sx={{ position: 'absolute', bottom: 0, color: '#6E6A65', fontFamily: '"DM Mono", monospace', fontSize: 10 }}>YOUR OFFER IS SEALED</Typography>
+                </Box>
+                <Box sx={{ borderTop: `1px solid ${line}`, pt: 2 }}>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}><Typography sx={{ color: muted, fontSize: 12 }}>Commitment status</Typography><Typography sx={{ color: '#D95C61', fontFamily: '"DM Mono", monospace', fontSize: 11 }}>WAITING FOR REVEAL</Typography></Stack>
+                  <LinearProgress variant="determinate" value={62} sx={{ height: 3, background: '#2A2928', '& .MuiLinearProgress-bar': { background: red } }} />
+                </Box>
+              </Stack>
+            </Surface>
+          </Grid>
         </Grid>
-      </Box>
 
-      {/* User Guide Section */}
-      <Box sx={{ width: '100%', mt: 16, pb: 12 }}>
-        <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', mb: 2, fontStyle: 'italic' }}>
-          The Field Guide
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', fontFamily: 'Inter', mb: 6, maxWidth: 600 }}>
-          Master the mechanics of a cryptographically sealed auction. Here is how you can participate and secure your victory.
-        </Typography>
-        
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 4 }}>
-          {/* Step 1 */}
-          <Paper elevation={0} sx={{ p: 4, borderRadius: '16px', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', height: '100%' }}>
-            <Typography sx={{ color: theme.palette.primary.main, fontWeight: 800, fontSize: '2rem', mb: 2, fontFamily: 'Inter' }}>01</Typography>
-            <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '1.2rem', mb: 1, fontFamily: 'Inter' }}>Commit Phase</Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.95rem', lineHeight: 1.6, fontFamily: 'Inter' }}>
-              Connect your 1AM wallet and enter the Dashboard. During the open commit phase, you submit your secret bid. Your browser generates a zero-knowledge proof locally, hiding your bid amount in a commitment hash. No one, not even the auctioneer, can see what you bid.
-            </Typography>
-          </Paper>
-          
-          {/* Step 2 */}
-          <Paper elevation={0} sx={{ p: 4, borderRadius: '16px', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', height: '100%' }}>
-            <Typography sx={{ color: theme.palette.primary.main, fontWeight: 800, fontSize: '2rem', mb: 2, fontFamily: 'Inter' }}>02</Typography>
-            <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '1.2rem', mb: 1, fontFamily: 'Inter' }}>Reveal Phase</Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.95rem', lineHeight: 1.6, fontFamily: 'Inter' }}>
-              Once the auctioneer closes bidding, the auction enters the Reveal Phase. You must return to the Dashboard to "Reveal" your bid. You submit another zero-knowledge proof proving your plaintext bid matches the hash you submitted in Phase 01.
-            </Typography>
-          </Paper>
-          
-          {/* Step 3 */}
-          <Paper elevation={0} sx={{ p: 4, borderRadius: '16px', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', height: '100%' }}>
-            <Typography sx={{ color: theme.palette.primary.main, fontWeight: 800, fontSize: '2rem', mb: 2, fontFamily: 'Inter' }}>03</Typography>
-            <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '1.2rem', mb: 1, fontFamily: 'Inter' }}>Resolution</Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.95rem', lineHeight: 1.6, fontFamily: 'Inter' }}>
-              After all bidders have revealed their bids, the auctioneer resolves the auction. The smart contract mathematically guarantees that the highest revealed bid wins the auction.
-            </Typography>
-          </Paper>
+        <Box sx={{ mt: { xs: 10, md: 15 } }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={3} sx={{ mb: 3 }}>
+            <Box>
+              <Typography sx={{ color: red, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>WHY THIS EXISTS</Typography>
+              <Typography variant="h3" sx={{ color: paper, maxWidth: 620 }}>A fairer room for high-signal decisions.</Typography>
+            </Box>
+            <Typography sx={{ color: muted, maxWidth: 390, lineHeight: 1.7, alignSelf: 'end' }}>Traditional auctions reveal too much, too early. SealedAuction creates a deliberate gap between making an offer and revealing it.</Typography>
+          </Stack>
+          <Grid container spacing={2}>
+            {[
+              { icon: <VisibilityOffOutlinedIcon />, title: 'Strategy stays yours', text: 'Only a commitment is published during bidding. Your number remains on your device.' },
+              { icon: <LockOutlinedIcon />, title: 'Proof replaces trust', text: 'The reveal is checked against the original commitment by a Midnight circuit.' },
+              { icon: <GavelOutlinedIcon />, title: 'The room has a record', text: 'Every phase change is anchored on-chain and independently inspectable.' },
+            ].map((item, index) => (
+              <Grid item xs={12} md={4} key={item.title}>
+                <Surface sx={{ p: 3.2, minHeight: 205, transition: 'transform 220ms ease, border-color 220ms ease', '&:hover': { transform: 'translateY(-5px)', borderColor: '#6D292D' } }}>
+                  <Box sx={{ color: red, mb: 3 }}>{item.icon}</Box>
+                  <Typography sx={{ color: paper, fontSize: 20, mb: 1 }}>{item.title}</Typography>
+                  <Typography sx={{ color: muted, lineHeight: 1.65, fontSize: 14 }}>{item.text}</Typography>
+                  <Typography sx={{ color: '#5F5A56', fontFamily: '"DM Mono", monospace', fontSize: 10, mt: 3 }}>0{index + 1}</Typography>
+                </Surface>
+              </Grid>
+            ))}
+          </Grid>
         </Box>
-      </Box>
-    </Container>
+
+        <Grid container spacing={2} sx={{ mt: { xs: 10, md: 15 } }}>
+          <Grid item xs={12} md={7}>
+            <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%' }}>
+              <Typography sx={{ color: red, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>SEE THE MECHANIC</Typography>
+              <Typography variant="h4" sx={{ color: paper, mb: 1 }}>A bid becomes a commitment.</Typography>
+              <Typography sx={{ color: muted, lineHeight: 1.6, maxWidth: 520, mb: 3 }}>Type a test amount and watch the private input become a public commitment. This is a visual demo, not a live transaction.</Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                <TextField fullWidth value={mockBid} onChange={(event) => setMockBid(event.target.value.replace(/[^0-9]/g, ''))} placeholder="Enter a test amount" InputProps={{ startAdornment: <InputAdornment position="start"><Typography sx={{ color: muted, fontFamily: '"DM Mono", monospace' }}>TOK</Typography></InputAdornment> }} />
+                <Button variant="contained" onClick={simulateProof} disabled={isProving || !mockBid} sx={{ minWidth: 145 }}>{isProving ? <CircularProgress size={18} color="inherit" /> : 'Create proof'}</Button>
+              </Stack>
+              {isProving && <Box sx={{ mt: 3 }}><Typography sx={{ color: muted, fontSize: 12, mb: 1 }}>Preparing local circuit</Typography><LinearProgress sx={{ background: '#2A2928', '& .MuiLinearProgress-bar': { background: red } }} /></Box>}
+              {proofResult && <Box sx={{ mt: 3, p: 2, border: '1px solid #6D292D', background: 'rgba(179,38,45,0.08)' }}><Typography sx={{ color: '#D95C61', fontFamily: '"DM Mono", monospace', fontSize: 10, mb: 1 }}>PUBLIC COMMITMENT</Typography><Typography sx={{ color: paper, fontFamily: '"DM Mono", monospace', fontSize: 12, wordBreak: 'break-all' }}>{proofResult}</Typography></Box>}
+            </Surface>
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%', background: '#F4F1EC', color: '#0B0B0B', borderColor: '#F4F1EC' }}>
+              <Typography sx={{ color: red, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 2 }}>THREE PHASES</Typography>
+              <Stack spacing={2.5}>
+                {[['01', 'Commit', 'Submit a sealed offer.'], ['02', 'Reveal', 'Prove the offer matches.'], ['03', 'Resolve', 'Finalize the highest valid bid.']].map(([number, title, text]) => <Stack key={number} direction="row" spacing={2}><Typography sx={{ color: red, fontFamily: '"DM Mono", monospace', fontSize: 12, pt: 0.3 }}>{number}</Typography><Box><Typography sx={{ color: '#0B0B0B', fontSize: 18 }}>{title}</Typography><Typography sx={{ color: '#6E6A65', fontSize: 13, mt: 0.4 }}>{text}</Typography></Box></Stack>)}
+              </Stack>
+              <Button variant="outlined" onClick={() => navigate('/privacy')} endIcon={<ArrowForwardRoundedIcon />} sx={{ mt: 4, color: '#0B0B0B', borderColor: '#9D9790', '&:hover': { borderColor: red, background: 'rgba(179,38,45,0.06)' } }}>Read the privacy model</Button>
+            </Surface>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: { xs: 10, md: 15 } }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="end" sx={{ mb: 3 }}><Box><Typography sx={{ color: red, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>YOUR ROOMS</Typography><Typography variant="h4" sx={{ color: paper }}>Recent auctions</Typography></Box><Button onClick={() => navigate('/dashboard')} endIcon={<ArrowForwardRoundedIcon />} sx={{ color: '#D95C61' }}>Open room</Button></Stack>
+          {recentAuctions.length > 0 ? <Grid container spacing={2}>{recentAuctions.map((auction) => <Grid item xs={12} md={4} key={auction.address}><Surface sx={{ p: 2.5, cursor: 'pointer', '&:hover': { borderColor: '#6D292D' } }} onClick={() => navigate(`/dashboard?address=${auction.address}`)}><Typography sx={{ color: paper, fontSize: 18, mb: 1 }}>{auction.name || 'Untitled auction'}</Typography><Typography sx={{ color: muted, fontFamily: '"DM Mono", monospace', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis' }}>{auction.address}</Typography></Surface></Grid>)}</Grid> : <Surface sx={{ p: 3, borderStyle: 'dashed' }}><Typography sx={{ color: muted }}>No rooms saved yet. Create the first private auction when you are ready.</Typography></Surface>}
+        </Box>
+      </Container>
     </>
   );
 };
 
-const App: React.FC = () => {
-  return (
-    <BrowserRouter>
-      <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/verify" element={<VerifyPage />} />
-          </Routes>
-        </MainLayout>
-      </Box>
-    </BrowserRouter>
-  );
-};
+const App: React.FC = () => (
+  <BrowserRouter>
+    <MainLayout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/verify" element={<VerifyPage />} />
+      </Routes>
+    </MainLayout>
+  </BrowserRouter>
+);
 
 export default App;

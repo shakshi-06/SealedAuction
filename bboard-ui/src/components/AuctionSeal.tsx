@@ -104,7 +104,7 @@ export const AuctionSeal: React.FC<Readonly<AuctionSealProps>> = ({ state }) => 
           sx={{ fontSize: '1.8rem', fontFamily: '"IBM Plex Mono", monospace' }}
           data-testid="auction-highest-bid"
         >
-          {state.highestBid > 0n ? state.highestBid.toString() : '—'}
+          {state.highestBid > 0n ? state.highestBid.toString() : 'Not revealed'}
         </Typography>
       </Box>
     );

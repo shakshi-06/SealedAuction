@@ -25,7 +25,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<ConnectedSession | null>(null);
   const connectingRef = useRef(false);
 
-  // Poll for wallet — wallets inject asynchronously after page load
+  // Poll for wallet. Wallets inject asynchronously after page load
   useEffect(() => {
     const startedAt = Date.now();
     const id = setInterval(() => {

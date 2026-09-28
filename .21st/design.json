@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "project": {
+    "name": "auction-cli-scaffold",
+    "productType": "privacy-preserving sealed-bid auction",
+    "stack": ["React", "MUI", "Vite"]
+  },
+  "sources": {
+    "tokens": ["bboard-ui/src/config/theme.ts"],
+    "components": ["bboard-ui/src/components/Layout/Header.tsx", "bboard-ui/src/components/Layout/MainLayout.tsx"],
+    "assets": [],
+    "instructions": []
+  },
+  "design": {
+    "colorMode": "dark",
+    "colors": { "ink": "#0B0B0B", "paper": "#F4F1EC", "red": "#B3262D", "redSoft": "#D95C61", "line": "#2A2928" },
+    "typography": { "display": "Space Grotesk", "body": "IBM Plex Sans", "data": "DM Mono" },
+    "spacing": { "unit": 8, "container": "min(1380px, calc(100% - 40px))" },
+    "radius": { "default": 2 },
+    "shadows": { "default": "none" },
+    "motion": { "entrance": "revealUp", "ambient": "slowFloat", "feedback": "scan" },
+    "density": "editorial"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": ["MUI Paper", "MUI Button", "MUI Chip", "MUI TextField"],
+    "patterns": ["layered editorial card", "phase stepper", "commitment status panel"]
+  },
+  "constraints": {
+    "must": ["strict red, black, and white palette", "no neon accents", "no emoji in UI copy", "responsive and reduced-motion aware", "plain-language auction states"],
+    "avoid": ["generic SaaS gradients", "excessive rounded cards", "fake privacy claims", "em dashes in product copy"]
+  },
+  "decisions": [
+    { "date": "2026-09-28", "decision": "Use a restrained auction-house editorial system with hairline rules, dark ink surfaces, warm white type, and muted red for phase and action states." },
+    { "date": "2026-09-28", "decision": "Use deliberate card hover, reveal, scan, and floating seal motion only where it explains state or materiality." },
+    { "date": "2026-09-28", "decision": "Use 21st.dev card composition principles, adapted to the existing MUI and Midnight application architecture." }
+  ],
+  "evidence": ["skills.sh frontend-design", "21st-ui-build", "21st.dev card component patterns"]
+}
