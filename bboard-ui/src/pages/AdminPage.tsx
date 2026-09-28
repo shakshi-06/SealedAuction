@@ -4,7 +4,7 @@ import { createUnprovenDeployTx, submitTxAsync } from '@midnight-ntwrk/midnight-
 import { sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
 import { Contract, pureCircuits } from '../managed/contract/index.js';
 import { useWallet } from '../contexts/WalletContext';
-import { Box, Typography, Button, Paper, CircularProgress, IconButton, Alert, Tooltip, Stack } from '@mui/material';
+import { Box, Typography, Button, Paper, CircularProgress, IconButton, Alert, Tooltip, Stack, useTheme } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -23,6 +23,7 @@ function getCompiledContract() {
 }
 
 export const AdminPage = () => {
+  const theme = useTheme();
   const { session, isConnected } = useWallet();
   const [status, setStatus] = useState<'idle' | 'deploying' | 'deployed' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -77,8 +78,8 @@ export const AdminPage = () => {
   if (!isConnected) {
     return (
       <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
-        <Paper elevation={3} sx={{ p: 6, maxWidth: 500, textAlign: 'center', borderRadius: 4, background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <Typography variant="h5" color="white" gutterBottom fontWeight="bold">
+        <Paper elevation={3} sx={{ p: 6, maxWidth: 500, textAlign: 'center', borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', backdropFilter: 'blur(10px)', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
+          <Typography variant="h5" color="text.primary" gutterBottom fontWeight="bold">
             Admin Portal
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -91,8 +92,8 @@ export const AdminPage = () => {
 
   return (
     <Box sx={{ maxWidth: '700px', margin: '0 auto', p: { xs: 2, md: 4 } }}>
-      <Paper elevation={24} sx={{ p: 5, borderRadius: 4, background: 'linear-gradient(145deg, rgba(30,30,30,0.9), rgba(15,15,15,0.95))', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-        <Typography variant="h4" color="white" fontWeight="800" gutterBottom>
+      <Paper elevation={24} sx={{ p: 5, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'linear-gradient(145deg, rgba(30,30,30,0.9), rgba(15,15,15,0.95))' : '#fff', backdropFilter: 'blur(20px)', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)' }}>
+        <Typography variant="h4" color="text.primary" fontWeight="800" gutterBottom>
           Deploy Contract
         </Typography>
         <Typography variant="body1" color="text.secondary" mb={4}>
@@ -121,9 +122,9 @@ export const AdminPage = () => {
         )}
 
         {status === 'deploying' && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(255,255,255,0.05)', p: 3, borderRadius: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', p: 3, borderRadius: 3 }}>
             <CircularProgress size={24} sx={{ color: '#4da6ff' }} />
-            <Typography color="white" fontWeight="bold">
+            <Typography color="text.primary" fontWeight="bold">
               Deploying... Check your 1AM wallet popup to sign the transaction.
             </Typography>
           </Box>
@@ -137,8 +138,8 @@ export const AdminPage = () => {
             <Typography variant="body2" color="text.secondary" mb={1}>
               Contract Address:
             </Typography>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ background: 'rgba(0,0,0,0.5)', p: 2, borderRadius: 2 }}>
-              <Typography variant="body1" color="white" sx={{ fontFamily: 'monospace', wordBreak: 'break-all', flexGrow: 1 }}>
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.05)', p: 2, borderRadius: 2 }}>
+              <Typography variant="body1" color="text.primary" sx={{ fontFamily: 'monospace', wordBreak: 'break-all', flexGrow: 1 }}>
                 {deployedAddress}
               </Typography>
               <Tooltip title={copied ? "Copied!" : "Copy Address"}>

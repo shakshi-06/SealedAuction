@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, Container, Grid, Stack, TextField, InputAdornment, LinearProgress } from '@mui/material';
+import { Box, Typography, Button, Paper, Container, Grid, Stack, TextField, InputAdornment, LinearProgress, useTheme } from '@mui/material';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { MainLayout } from './components';
 import { AdminPage } from './pages/AdminPage';
@@ -9,6 +9,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 const Home: React.FC = () => {
+  const theme = useTheme();
   const { isConnected, connect } = useWallet();
   const navigate = useNavigate();
   const [recentAuctions, setRecentAuctions] = useState<any[]>([]);
@@ -66,7 +67,7 @@ const Home: React.FC = () => {
         <Typography 
           component="h1"
           sx={{ 
-            color: '#fff', 
+            color: 'text.primary', 
             fontSize: { xs: '3.5rem', md: '5.5rem' }, 
             lineHeight: 1, 
             letterSpacing: '-0.03em',
@@ -81,7 +82,7 @@ const Home: React.FC = () => {
           <span style={{ fontFamily: 'Instrument Serif', fontWeight: 400 }}>strategic.</span>
         </Typography>
 
-        <Typography sx={{ fontFamily: 'Inter', color: '#999', fontSize: '1.2rem', maxWidth: 450, mb: 6, lineHeight: 1.6 }}>
+        <Typography sx={{ fontFamily: 'Inter', color: 'text.secondary', fontSize: '1.2rem', maxWidth: 450, mb: 6, lineHeight: 1.6 }}>
           SealedAuction is a private passage through the bidding process: prove you have the funds and submit your bid without handing your strategy to a server.
         </Typography>
 
@@ -128,15 +129,15 @@ const Home: React.FC = () => {
             variant="outlined"
             onClick={() => navigate('/admin')}
             sx={{
-              borderColor: 'rgba(255,255,255,0.2)',
-              color: '#fff',
+              borderColor: 'text.secondary',
+              color: 'text.primary',
               fontWeight: 500,
               fontSize: '1rem',
               fontFamily: 'Inter',
               px: 4, py: 1.5,
               borderRadius: '12px',
               textTransform: 'none',
-              '&:hover': { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.4)' }
+              '&:hover': { background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', borderColor: 'text.primary' }
             }}
           >
             Deploy contract &nearr;
@@ -204,29 +205,29 @@ const Home: React.FC = () => {
       <Box sx={{ width: '100%', mt: 12, mb: 4 }}>
         <Grid container spacing={3}>
           {/* Stat Card 1 */}
-          <Grid xs={12} md={4}>
-            <Paper sx={{ p: 4, borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: 'rgba(255,255,255,0.04)' } }}>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 4, borderRadius: '24px', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#fafafa' } }}>
               <Typography sx={{ color: '#ccff00', fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>100<span style={{ fontSize: '2rem' }}>%</span></Typography>
-              <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Client-Side Privacy</Typography>
-              <Typography sx={{ color: '#888', fontSize: '0.9rem', fontFamily: 'Inter' }}>Your bid data never touches our servers. It is strictly kept on your device.</Typography>
+              <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Client-Side Privacy</Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', fontFamily: 'Inter' }}>Your bid data never touches our servers. It is strictly kept on your device.</Typography>
             </Paper>
           </Grid>
           
           {/* Stat Card 2 */}
-          <Grid xs={12} md={4}>
-            <Paper sx={{ p: 4, borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: 'rgba(255,255,255,0.04)' } }}>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 4, borderRadius: '24px', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#fafafa' } }}>
               <Typography sx={{ color: '#ccff00', fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>&lt; 2.5<span style={{ fontSize: '2rem' }}>s</span></Typography>
-              <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>WASM Proof Gen</Typography>
-              <Typography sx={{ color: '#888', fontSize: '0.9rem', fontFamily: 'Inter' }}>High-speed local circuit execution to synthesize zero-knowledge proofs instantly.</Typography>
+              <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>WASM Proof Gen</Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', fontFamily: 'Inter' }}>High-speed local circuit execution to synthesize zero-knowledge proofs instantly.</Typography>
             </Paper>
           </Grid>
 
           {/* Stat Card 3 */}
-          <Grid xs={12} md={4}>
-            <Paper sx={{ p: 4, borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: 'rgba(255,255,255,0.04)' } }}>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 4, borderRadius: '24px', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#fafafa' } }}>
               <Typography sx={{ color: '#ccff00', fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>Zero</Typography>
-              <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Information Leakage</Typography>
-              <Typography sx={{ color: '#888', fontSize: '0.9rem', fontFamily: 'Inter' }}>The smart contract blindly verifies your bid through ZK-SNARK math assertions.</Typography>
+              <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Information Leakage</Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', fontFamily: 'Inter' }}>The smart contract blindly verifies your bid through ZK-SNARK math assertions.</Typography>
             </Paper>
           </Grid>
         </Grid>
@@ -239,15 +240,15 @@ const Home: React.FC = () => {
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={8} alignItems="center">
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ color: '#ccff00', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.1em', mb: 1 }}>INTERACTIVE ZK PLAYGROUND</Typography>
-              <Typography variant="h3" sx={{ color: '#fff', fontFamily: 'Instrument Serif', fontStyle: 'italic', mb: 2 }}>
+              <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', fontStyle: 'italic', mb: 2 }}>
                 See zero-knowledge in action
               </Typography>
-              <Typography sx={{ color: '#888', fontFamily: 'Inter', mb: 4, lineHeight: 1.6 }}>
+              <Typography sx={{ color: 'text.secondary', fontFamily: 'Inter', mb: 4, lineHeight: 1.6 }}>
                 Enter a mock bid amount to see how the Midnight Network processes your data. Your plaintext bid never leaves this browser window. Instead, a local WASM circuit mathematically hashes it into an irrefutable Pedersen Commitment.
               </Typography>
               
-              <Box sx={{ background: 'rgba(0,0,0,0.4)', p: 3, borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <Typography sx={{ color: '#666', fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PRIVATE INPUT (STAYS ON DEVICE)</Typography>
+              <Box sx={{ background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', p: 3, borderRadius: '16px', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
+                <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PRIVATE INPUT (STAYS ON DEVICE)</Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField 
                     fullWidth 
@@ -256,12 +257,12 @@ const Home: React.FC = () => {
                     value={mockBid}
                     onChange={(e) => setMockBid(e.target.value)}
                     InputProps={{
-                      startAdornment: <InputAdornment position="start" sx={{ color: '#888' }}>$</InputAdornment>,
-                      sx: { color: '#fff', background: 'rgba(255,255,255,0.02)', fontFamily: 'IBM Plex Mono' }
+                      startAdornment: <InputAdornment position="start" sx={{ color: 'text.secondary' }}>$</InputAdornment>,
+                      sx: { color: 'text.primary', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', fontFamily: 'IBM Plex Mono' }
                     }}
                     sx={{
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' },
                       '& .Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#ccff00' }
                     }}
                   />
@@ -292,7 +293,7 @@ const Home: React.FC = () => {
                 {proofResult && (
                   <Box sx={{ mt: 3, p: 2, borderRadius: '8px', background: 'rgba(204,255,0,0.05)', border: '1px solid rgba(204,255,0,0.2)' }}>
                     <Typography sx={{ color: '#ccff00', fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PUBLIC ON-CHAIN COMMITMENT (BROADCASTED)</Typography>
-                    <Typography sx={{ color: '#fff', fontFamily: 'IBM Plex Mono', fontSize: '0.85rem', wordBreak: 'break-all' }}>
+                    <Typography sx={{ color: 'text.primary', fontFamily: 'IBM Plex Mono', fontSize: '0.85rem', wordBreak: 'break-all' }}>
                       {proofResult}
                     </Typography>
                   </Box>
@@ -314,9 +315,9 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Live Auctions Explorer Feed */}
-      <Box sx={{ width: '100%', mt: 8, pt: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <Box sx={{ width: '100%', mt: 8, pt: 8, borderTop: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
-          <Typography variant="h3" sx={{ color: '#fff', fontFamily: 'Instrument Serif', fontStyle: 'italic' }}>
+          <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', fontStyle: 'italic' }}>
             Live Network Auctions
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -345,12 +346,12 @@ const Home: React.FC = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.1rem' }}>{auction.name}</Typography>
-                  <Typography sx={{ color: '#666', fontSize: '0.8rem', fontFamily: 'Inter' }}>
+                  <Typography sx={{ color: 'text.primary', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.1rem' }}>{auction.name}</Typography>
+                  <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem', fontFamily: 'Inter' }}>
                     {Math.floor((Date.now() - auction.deployedAt) / 60000)}m ago
                   </Typography>
                 </Box>
-                <Typography sx={{ color: '#888', fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all', mb: 3 }}>
+                <Typography sx={{ color: 'text.secondary', fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all', mb: 3 }}>
                   {auction.address}
                 </Typography>
                 <Button 
@@ -376,10 +377,10 @@ const Home: React.FC = () => {
 
       {/* User Guide Section */}
       <Box sx={{ width: '100%', mt: 16, pb: 12 }}>
-        <Typography variant="h3" sx={{ color: '#fff', fontFamily: 'Instrument Serif', mb: 2, fontStyle: 'italic' }}>
+        <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', mb: 2, fontStyle: 'italic' }}>
           The Field Guide
         </Typography>
-        <Typography sx={{ color: '#888', fontFamily: 'Inter', mb: 6, maxWidth: 600 }}>
+        <Typography sx={{ color: 'text.secondary', fontFamily: 'Inter', mb: 6, maxWidth: 600 }}>
           Master the mechanics of a cryptographically sealed auction. Here is how you can participate and secure your victory.
         </Typography>
         
@@ -420,7 +421,7 @@ const Home: React.FC = () => {
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Box sx={{ background: '#0A0A0A', minHeight: '100vh' }}>
+      <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
         <MainLayout>
           <Routes>
             <Route path="/" element={<Home />} />

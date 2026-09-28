@@ -1,11 +1,15 @@
 import React from 'react';
-import { AppBar, Box, Typography, Button, Stack } from '@mui/material';
-import { useWallet } from '../../contexts/WalletContext';
+import { AppBar, Box, Typography, Button, Stack, IconButton, useTheme } from '@mui/material';
+import { useWallet, useAppTheme } from '../../contexts';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 
 export const Header: React.FC = () => {
   const { connect, disconnect, isConnected, isConnecting, address } = useWallet();
+  const { mode, toggleTheme } = useAppTheme();
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,9 +35,9 @@ export const Header: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: 'rgba(20, 20, 20, 0.4)',
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(20, 20, 20, 0.4)' : 'rgba(255, 255, 255, 0.4)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
+        border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(0, 0, 0, 0.05)',
         borderRadius: '24px',
         py: 1.5,
         px: 3,
@@ -68,7 +72,7 @@ export const Header: React.FC = () => {
         </Box>
 
         {/* Navigation */}
-        <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' }, background: 'rgba(0,0,0,0.5)', p: 0.5, borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' }, background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.05)', p: 0.5, borderRadius: '20px', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -76,16 +80,16 @@ export const Header: React.FC = () => {
                 key={item.label}
                 onClick={() => navigate(item.path)}
                 sx={{
-                  color: isActive ? '#ccff00' : '#888',
+                  color: isActive ? (theme.palette.mode === 'dark' ? '#ccff00' : 'text.primary') : 'text.secondary',
                   textTransform: 'none',
-                  fontWeight: 500,
+                  fontWeight: isActive ? 600 : 500,
                   fontSize: '0.9rem',
                   fontFamily: 'Inter, sans-serif',
                   px: 3,
                   py: 1,
                   borderRadius: '16px',
-                  background: isActive ? 'rgba(204, 255, 0, 0.1)' : 'transparent',
-                  '&:hover': { color: '#fff', background: 'rgba(255,255,255,0.05)' }
+                  background: isActive ? (theme.palette.mode === 'dark' ? 'rgba(204, 255, 0, 0.1)' : 'rgba(0, 0, 0, 0.05)') : 'transparent',
+                  '&:hover': { color: 'text.primary', background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }
                 }}
               >
                 {item.label}
@@ -94,8 +98,11 @@ export const Header: React.FC = () => {
           })}
         </Stack>
 
-        {/* Connect Button */}
-        <Box>
+        {/* Connect & Theme Buttons */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <IconButton onClick={toggleTheme} sx={{ color: theme.palette.text.primary }}>
+            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
           {!isConnected ? (
             <Button
               onClick={() => connect()}

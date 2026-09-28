@@ -12,8 +12,7 @@ import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@mui/material';
 import { setNetworkId, NetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import App from './App';
-import CssBaseline from '@mui/material/CssBaseline';
-import { theme } from './config/theme';
+import { ThemeContextProvider } from './contexts/ThemeContext';
 import '@midnight-ntwrk/dapp-connector-api';
 import * as pino from 'pino';
 
@@ -30,11 +29,10 @@ logger.trace(`networkId = ${networkId}`);
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <CssBaseline />
-    <ThemeProvider theme={theme}>
+    <ThemeContextProvider>
       <WalletProvider>
         <App />
       </WalletProvider>
-    </ThemeProvider>
+    </ThemeContextProvider>
   </React.StrictMode>,
 );
