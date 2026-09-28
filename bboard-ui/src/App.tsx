@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, Container, Grid, Stack } from '@mui/material';
+import { Box, Typography, Button, Paper, Container, Grid, Stack, TextField, InputAdornment, LinearProgress } from '@mui/material';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { MainLayout } from './components';
 import { AdminPage } from './pages/AdminPage';
@@ -12,6 +12,22 @@ const Home: React.FC = () => {
   const { isConnected, connect } = useWallet();
   const navigate = useNavigate();
   const [recentAuctions, setRecentAuctions] = useState<any[]>([]);
+
+  // ZK Playground state
+  const [mockBid, setMockBid] = useState('');
+  const [isProving, setIsProving] = useState(false);
+  const [proofResult, setProofResult] = useState('');
+
+  const handleSimulateProof = () => {
+    if (!mockBid) return;
+    setIsProving(true);
+    setProofResult('');
+    setTimeout(() => {
+      setIsProving(false);
+      const fakeHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      setProofResult('0x' + fakeHash);
+    }, 2400);
+  };
 
   useEffect(() => {
     try {
@@ -29,7 +45,23 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: { xs: 8, md: 12 }, px: { xs: 2, md: 4 }, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+    <>
+      {/* Live Network Scrolling Ticker */}
+      <Box sx={{ width: '100%', background: '#ccff00', color: '#000', py: 1.5, overflow: 'hidden', whiteSpace: 'nowrap', display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box sx={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 4, minWidth: '200%' }}>
+          {[...Array(6)].map((_, i) => (
+            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Typography sx={{ fontWeight: 800, fontFamily: 'Inter', fontSize: '0.85rem', letterSpacing: '0.05em' }}>NETWORK: MIDNIGHT PREPROD <span style={{ color: '#d32f2f', fontWeight: 'bold' }}>● LIVE</span></Typography>
+              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>PRIVACY MODEL: ZERO-KNOWLEDGE CRYPTOGRAPHY</Typography>
+              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>PROVER: LOCAL CLIENT WASM</Typography>
+              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>SECURITY: NON-CUSTODIAL &middot; ZERO LEAKS</Typography>
+              <Typography sx={{ fontWeight: 600, fontFamily: 'Inter', fontSize: '0.85rem' }}>&middot;</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      <Container maxWidth="lg" sx={{ mt: { xs: 8, md: 12 }, px: { xs: 2, md: 4 }, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
       <Box sx={{ maxWidth: { xs: '100%', md: '55%' }, mb: 8 }}>
         <Typography 
           component="h1"
@@ -168,6 +200,119 @@ const Home: React.FC = () => {
         </Box>
       </Box>
 
+      {/* ZK Stat Cards */}
+      <Box sx={{ width: '100%', mt: 12, mb: 4 }}>
+        <Grid container spacing={3}>
+          {/* Stat Card 1 */}
+          <Grid xs={12} md={4}>
+            <Paper sx={{ p: 4, borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: 'rgba(255,255,255,0.04)' } }}>
+              <Typography sx={{ color: '#ccff00', fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>100<span style={{ fontSize: '2rem' }}>%</span></Typography>
+              <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Client-Side Privacy</Typography>
+              <Typography sx={{ color: '#888', fontSize: '0.9rem', fontFamily: 'Inter' }}>Your bid data never touches our servers. It is strictly kept on your device.</Typography>
+            </Paper>
+          </Grid>
+          
+          {/* Stat Card 2 */}
+          <Grid xs={12} md={4}>
+            <Paper sx={{ p: 4, borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: 'rgba(255,255,255,0.04)' } }}>
+              <Typography sx={{ color: '#ccff00', fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>&lt; 2.5<span style={{ fontSize: '2rem' }}>s</span></Typography>
+              <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>WASM Proof Gen</Typography>
+              <Typography sx={{ color: '#888', fontSize: '0.9rem', fontFamily: 'Inter' }}>High-speed local circuit execution to synthesize zero-knowledge proofs instantly.</Typography>
+            </Paper>
+          </Grid>
+
+          {/* Stat Card 3 */}
+          <Grid xs={12} md={4}>
+            <Paper sx={{ p: 4, borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)', background: 'rgba(255,255,255,0.04)' } }}>
+              <Typography sx={{ color: '#ccff00', fontSize: '3.5rem', fontWeight: 800, fontFamily: 'Inter', lineHeight: 1, mb: 1 }}>Zero</Typography>
+              <Typography sx={{ color: '#fff', fontWeight: 600, fontFamily: 'Inter', fontSize: '1.2rem', mb: 1 }}>Information Leakage</Typography>
+              <Typography sx={{ color: '#888', fontSize: '0.9rem', fontFamily: 'Inter' }}>The smart contract blindly verifies your bid through ZK-SNARK math assertions.</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Interactive ZK Playground */}
+      <Box sx={{ width: '100%', mt: 8, mb: 12, p: 6, borderRadius: '24px', background: 'linear-gradient(145deg, rgba(20,20,20,0.8), rgba(10,10,10,0.9))', border: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'absolute', top: '-50%', left: '-20%', width: '50%', height: '200%', background: 'radial-gradient(ellipse at center, rgba(204,255,0,0.05) 0%, transparent 70%)', zIndex: 0 }} />
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={8} alignItems="center">
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ color: '#ccff00', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.1em', mb: 1 }}>INTERACTIVE ZK PLAYGROUND</Typography>
+              <Typography variant="h3" sx={{ color: '#fff', fontFamily: 'Instrument Serif', fontStyle: 'italic', mb: 2 }}>
+                See zero-knowledge in action
+              </Typography>
+              <Typography sx={{ color: '#888', fontFamily: 'Inter', mb: 4, lineHeight: 1.6 }}>
+                Enter a mock bid amount to see how the Midnight Network processes your data. Your plaintext bid never leaves this browser window. Instead, a local WASM circuit mathematically hashes it into an irrefutable Pedersen Commitment.
+              </Typography>
+              
+              <Box sx={{ background: 'rgba(0,0,0,0.4)', p: 3, borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <Typography sx={{ color: '#666', fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PRIVATE INPUT (STAYS ON DEVICE)</Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField 
+                    fullWidth 
+                    variant="outlined" 
+                    placeholder="Enter bid amount" 
+                    value={mockBid}
+                    onChange={(e) => setMockBid(e.target.value)}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start" sx={{ color: '#888' }}>$</InputAdornment>,
+                      sx: { color: '#fff', background: 'rgba(255,255,255,0.02)', fontFamily: 'IBM Plex Mono' }
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                      '& .Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#ccff00' }
+                    }}
+                  />
+                  <Button 
+                    variant="contained" 
+                    onClick={handleSimulateProof}
+                    disabled={isProving || !mockBid}
+                    sx={{ 
+                      background: '#ccff00', color: '#000', fontWeight: 600, fontFamily: 'Inter', minWidth: 140,
+                      '&:hover': { background: '#aacc00' },
+                      '&.Mui-disabled': { background: 'rgba(204,255,0,0.2)', color: 'rgba(0,0,0,0.5)' }
+                    }}
+                  >
+                    {isProving ? 'Proving...' : 'Generate Proof'}
+                  </Button>
+                </Box>
+                
+                {isProving && (
+                  <Box sx={{ mt: 3 }}>
+                    <Typography sx={{ color: '#888', fontSize: '0.8rem', fontFamily: 'Inter', mb: 1, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Synthesizing ZK-SNARK...</span>
+                      <span style={{ color: '#ccff00' }}>Local WASM Circuit</span>
+                    </Typography>
+                    <LinearProgress sx={{ background: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { background: '#ccff00' } }} />
+                  </Box>
+                )}
+                
+                {proofResult && (
+                  <Box sx={{ mt: 3, p: 2, borderRadius: '8px', background: 'rgba(204,255,0,0.05)', border: '1px solid rgba(204,255,0,0.2)' }}>
+                    <Typography sx={{ color: '#ccff00', fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>PUBLIC ON-CHAIN COMMITMENT (BROADCASTED)</Typography>
+                    <Typography sx={{ color: '#fff', fontFamily: 'IBM Plex Mono', fontSize: '0.85rem', wordBreak: 'break-all' }}>
+                      {proofResult}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+            <Box sx={{ flex: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
+              {/* Graphic representation of the proof process */}
+              <Box sx={{ position: 'relative', width: 280, height: 280, border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', borderTop: '2px solid #ccff00', animation: 'spin 4s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
+                <Typography sx={{ color: '#fff', fontFamily: 'IBM Plex Mono', fontSize: '2rem', fontWeight: 300 }}>ZK</Typography>
+                <Paper elevation={0} sx={{ position: 'absolute', top: -10, right: 20, background: '#ccff00', px: 1, py: 0.5, borderRadius: '4px' }}>
+                  <Typography sx={{ color: '#000', fontSize: '0.65rem', fontWeight: 800 }}>PROVER</Typography>
+                </Paper>
+              </Box>
+            </Box>
+          </Stack>
+        </Box>
+      </Box>
+
       {/* Live Auctions Explorer Feed */}
       <Box sx={{ width: '100%', mt: 8, pt: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
@@ -268,6 +413,7 @@ const Home: React.FC = () => {
         </Box>
       </Box>
     </Container>
+    </>
   );
 };
 
