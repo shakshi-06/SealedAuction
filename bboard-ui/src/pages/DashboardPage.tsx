@@ -6,6 +6,8 @@ import { Contract, ledger, Ledger, pureCircuits } from '../managed/contract/inde
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { createUnprovenCallTx, submitTxAsync } from '@midnight-ntwrk/midnight-js-contracts';
 import { sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
+import { getOrCreateSecret, saveUserBid, getUserBid } from '../utils/secrets';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 function getCompiledContract() {
   const witnesses = {
@@ -31,7 +33,8 @@ export const DashboardPage = () => {
   const [contractLedger, setContractLedger] = useState<Ledger | null>(null);
   const [loadingState, setLoadingState] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
-  const [actionStatus, setActionStatus] = useState<string | null>(null);
+  const [localBid, setLocalBid] = useState<string | null>(null);
+  const [actionStatus, setActionStatus] = useState<{ type: 'info' | 'success' | 'error', message: string } | null>(null);
 
   const fetchState = useCallback(async () => {
     if (!session || !address) return;
@@ -55,20 +58,32 @@ export const DashboardPage = () => {
     if (address && session) {
       fetchState();
       const interval = setInterval(fetchState, 5000);
+      
+      const savedBid = getUserBid(session.unshieldedAddress, address);
+      if (savedBid) setLocalBid(savedBid);
+
       return () => clearInterval(interval);
     }
   }, [session, address, fetchState]);
 
   const handleAction = async (action: 'commitBid' | 'advanceToReveal' | 'revealBid' | 'resolveAuction') => {
     if (!session || !address) return;
-    setActionStatus(`Executing ${action}... Please approve in wallet.`);
+    setActionStatus({ type: 'info', message: `Executing ${action}... Please approve in wallet.` });
     try {
+      if (session.networkId !== 'Preprod') {
+        throw new Error('Please switch your wallet network to Preprod and try again.');
+      }
+
       const compiledContract = getCompiledContract();
       
-      const adminSk = new Uint8Array(32); // Mock: Same key used in deployer
-      const bidderSk = new Uint8Array(32); // Mock: Bidder secret key
-      const nonce = new Uint8Array(32); // Mock: nonce
-      const amount = BigInt(bidAmount || 0);
+      const adminSk = getOrCreateSecret('admin', session.unshieldedAddress);
+      const bidderSk = getOrCreateSecret('bidder', session.unshieldedAddress);
+      const nonce = getOrCreateSecret(`nonce_${address}`, session.unshieldedAddress);
+      
+      let amount = BigInt(bidAmount || 0);
+      if (action === 'revealBid' && localBid) {
+        amount = BigInt(localBid);
+      }
 
       const privateState = {
         auctioneer_secret: adminSk,
@@ -95,14 +110,19 @@ export const DashboardPage = () => {
         unprovenTx: txData.private.unprovenTx,
       });
 
-      setActionStatus(`Success: ${action}`);
+      if (action === 'commitBid' && bidAmount) {
+         saveUserBid(session.unshieldedAddress, address, bidAmount);
+         setLocalBid(bidAmount);
+      }
+
+      setActionStatus({ type: 'success', message: `Success: ${action} completed on-chain!` });
       setBidAmount('');
       fetchState();
     } catch (e: any) {
       console.error(e);
-      setActionStatus(`Error: ${e.message}`);
+      setActionStatus({ type: 'error', message: `Error: ${e.message}` });
     }
-    setTimeout(() => setActionStatus(null), 5000);
+    setTimeout(() => setActionStatus(null), 10000);
   };
 
   if (!isConnected) {
@@ -127,7 +147,7 @@ export const DashboardPage = () => {
             onChange={(e) => setAddress(e.target.value)}
             sx={{ input: { color: 'text.primary', fontFamily: 'monospace' }, label: { color: 'text.secondary' } }}
           />
-          <Button variant="contained" onClick={fetchState} disabled={loadingState} sx={{ background: '#ccff00', color: '#000', fontWeight: 'bold' }}>
+          <Button variant="contained" onClick={fetchState} disabled={loadingState} sx={{ background: theme.palette.primary.main, color: theme.palette.mode === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>
             {loadingState ? <CircularProgress size={24} /> : 'Sync'}
           </Button>
         </Stack>
@@ -138,8 +158,8 @@ export const DashboardPage = () => {
           {/* Asset Visualization */}
           <Grid xs={12} md={5}>
             <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', border: theme.palette.mode === 'dark' ? '1px solid rgba(204,255,0,0.1)' : '1px solid rgba(0,0,0,0.1)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ width: 150, height: 150, mb: 4, borderRadius: '20px', background: 'linear-gradient(135deg, rgba(204,255,0,0.2), rgba(77,166,255,0.2))', border: '1px dashed rgba(204,255,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography sx={{ color: '#ccff00', fontFamily: 'Instrument Serif', fontSize: '3rem' }}>?</Typography>
+              <Box sx={{ width: 150, height: 150, mb: 4, borderRadius: '20px', background: theme.palette.mode === 'dark' ? 'linear-gradient(135deg, rgba(204,255,0,0.2), rgba(77,166,255,0.2))' : 'linear-gradient(135deg, rgba(170,204,0,0.2), rgba(0,102,204,0.2))', border: `1px dashed ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.5)' : 'rgba(170,204,0,0.5)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography sx={{ color: theme.palette.primary.main, fontFamily: 'Instrument Serif', fontSize: '3rem' }}>?</Typography>
               </Box>
               <Typography variant="h5" fontWeight="bold" color="text.primary" mb={1} fontFamily="Inter">Mystery Asset</Typography>
               <Typography color="text.secondary" textAlign="center" fontFamily="Inter">A cryptographically sealed asset available for auction on Midnight.</Typography>
@@ -152,9 +172,9 @@ export const DashboardPage = () => {
               
               {/* Winner Podium */}
               {contractLedger.phase === 2n && (
-                <Box sx={{ p: 4, mb: 4, borderRadius: 3, background: 'linear-gradient(90deg, rgba(204,255,0,0.1), rgba(204,255,0,0.05))', border: '1px solid rgba(204,255,0,0.4)', textAlign: 'center' }}>
+                <Box sx={{ p: 4, mb: 4, borderRadius: 3, background: theme.palette.mode === 'dark' ? 'linear-gradient(90deg, rgba(204,255,0,0.1), rgba(204,255,0,0.05))' : 'linear-gradient(90deg, rgba(170,204,0,0.1), rgba(170,204,0,0.05))', border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.4)' : 'rgba(170,204,0,0.4)'}`, textAlign: 'center' }}>
                   <Typography sx={{ fontSize: '3rem', mb: 1 }}>🏆</Typography>
-                  <Typography variant="h4" fontWeight="bold" color="#ccff00" fontFamily="Instrument Serif" fontStyle="italic" mb={1}>
+                  <Typography variant="h4" fontWeight="bold" color={theme.palette.primary.main} fontFamily="Instrument Serif" fontStyle="italic" mb={1}>
                     Auction Resolved
                   </Typography>
                   <Typography sx={{ fontSize: '1.2rem', fontFamily: 'Inter' }}>
@@ -170,9 +190,9 @@ export const DashboardPage = () => {
                   sx={{ 
                     fontWeight: 'bold', 
                     fontFamily: 'Inter',
-                    background: contractLedger.phase === 0n ? 'rgba(204,255,0,0.2)' : contractLedger.phase === 1n ? 'rgba(255,165,0,0.2)' : 'rgba(255,255,255,0.1)',
-                    color: contractLedger.phase === 0n ? '#ccff00' : contractLedger.phase === 1n ? '#ffa500' : '#fff',
-                    border: `1px solid ${contractLedger.phase === 0n ? '#ccff00' : contractLedger.phase === 1n ? '#ffa500' : '#444'}`
+                    background: contractLedger.phase === 0n ? (theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.2)' : 'rgba(170,204,0,0.2)') : contractLedger.phase === 1n ? 'rgba(255,165,0,0.2)' : (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
+                    color: contractLedger.phase === 0n ? theme.palette.primary.main : contractLedger.phase === 1n ? '#ffa500' : 'text.primary',
+                    border: `1px solid ${contractLedger.phase === 0n ? theme.palette.primary.main : contractLedger.phase === 1n ? '#ffa500' : (theme.palette.mode === 'dark' ? '#444' : '#ccc')}`
                   }}
                 />
               </Stack>
@@ -188,9 +208,29 @@ export const DashboardPage = () => {
                 </Box>
               </Stack>
 
+              {contractLedger.phase === 1n && localBid && (
+                <Paper sx={{ p: 2, mb: 3, background: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.1)' : 'rgba(170,204,0,0.1)', color: theme.palette.primary.main, border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.2)' : 'rgba(170,204,0,0.2)'}` }}>
+                  <Typography variant="subtitle2" fontWeight="bold">Local Backup Found</Typography>
+                  <Typography variant="body2">Your unrevealed bid is {localBid} tokens. You can securely reveal it now.</Typography>
+                </Paper>
+              )}
+
               {actionStatus && (
-                <Paper sx={{ p: 2, mb: 3, background: 'rgba(204,255,0,0.1)', color: '#ccff00', border: '1px solid rgba(204,255,0,0.2)' }}>
-                  <Typography fontWeight="bold" fontFamily="Inter">{actionStatus}</Typography>
+                <Paper sx={{ p: 2, mb: 3, display: 'flex', flexDirection: 'column', gap: 1, background: actionStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.1)' : 'rgba(170,204,0,0.1)', color: actionStatus.type === 'error' ? '#ff4d4d' : theme.palette.primary.main, border: `1px solid ${actionStatus.type === 'error' ? 'rgba(255,0,0,0.3)' : theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.2)' : 'rgba(170,204,0,0.2)'}` }}>
+                  <Typography fontWeight="bold" fontFamily="Inter" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {actionStatus.type === 'info' && <CircularProgress size={16} color="inherit" />}
+                    {actionStatus.message}
+                  </Typography>
+                  {actionStatus.type === 'success' && (
+                    <Button 
+                      href={`https://preprod.midnightexplorer.com/contracts/${address}`} 
+                      target="_blank" 
+                      endIcon={<OpenInNewIcon fontSize="small" />}
+                      sx={{ alignSelf: 'flex-start', color: 'inherit', textTransform: 'none', p: 0, '&:hover': { background: 'transparent', textDecoration: 'underline' } }}
+                    >
+                      View on Midnight Explorer
+                    </Button>
+                  )}
                 </Paper>
               )}
 
@@ -206,7 +246,7 @@ export const DashboardPage = () => {
                         onChange={(e) => setBidAmount(e.target.value)}
                         sx={{ input: { color: 'text.primary' }, label: { color: 'text.secondary' }, flexGrow: 1 }}
                       />
-                      <Button variant="contained" onClick={() => handleAction('commitBid')} sx={{ background: '#ccff00', color: '#000', fontWeight: 'bold' }}>
+                      <Button variant="contained" onClick={() => handleAction('commitBid')} sx={{ background: theme.palette.primary.main, color: theme.palette.mode === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>
                         Commit Bid &rarr;
                       </Button>
                     </Stack>
@@ -214,7 +254,7 @@ export const DashboardPage = () => {
                 )}
 
                 {contractLedger.phase === 1n && (
-                  <Button variant="outlined" onClick={() => handleAction('revealBid')} sx={{ color: '#ccff00', borderColor: '#ccff00', fontWeight: 'bold', py: 1.5 }}>
+                  <Button variant="outlined" onClick={() => handleAction('revealBid')} sx={{ color: theme.palette.primary.main, borderColor: theme.palette.primary.main, fontWeight: 'bold', py: 1.5 }}>
                     Reveal My Bid
                   </Button>
                 )}

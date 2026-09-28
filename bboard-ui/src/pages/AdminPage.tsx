@@ -8,6 +8,7 @@ import { Box, Typography, Button, Paper, CircularProgress, IconButton, Alert, To
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { getOrCreateSecret } from '../utils/secrets';
 
 function getCompiledContract() {
   const witnesses = {
@@ -35,9 +36,14 @@ export const AdminPage = () => {
     setStatus('deploying');
     setErrorMsg(null);
     try {
+      // Preflight network check
+      if (session.networkId !== 'Preprod') {
+        throw new Error('Please switch your wallet network to Preprod and try again.');
+      }
+
       const compiledContract = getCompiledContract();
 
-      const adminSk = new Uint8Array(32); // Using zero-key for testing
+      const adminSk = getOrCreateSecret('admin', session.unshieldedAddress);
       const adminHash = (pureCircuits as any).auctioneer_key(adminSk);
 
       const deployTxData = await createUnprovenDeployTx(session.providers as any, {

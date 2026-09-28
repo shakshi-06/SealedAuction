@@ -10,8 +10,8 @@ export ledger phase: Uint<8>;
 // Hash of the auctioneer's secret key — stored at deploy time
 export ledger auctioneer: Bytes<32>;
 
-// The sealed commitment hash of the winning bid (commit phase)
-export ledger bid_commitment: Bytes<32>;
+// The sealed commitment hashes of the bids (commit phase)
+export ledger bid_commitments: Set<Bytes<32>>;
 
 // The highest revealed bid so far (reveal phase)
 export ledger highest_bid: Uint<64>;
@@ -38,8 +38,7 @@ constructor(auctioneer_hash: Bytes<32>) {
     phase = disclose(0 as Uint<8>);
     highest_bid = disclose(0 as Uint<64>);
     round = disclose(1 as Uint<32>);
-    // Initialize bid_commitment to zero bytes
-    bid_commitment = disclose(pad(32, "no-bid"));
+    // Sets are initially empty, no explicit initialization needed for bid_commitments
 }
 
 // ─── Pure Circuits ────────────────────────────────────────────────────────────
@@ -80,7 +79,7 @@ export circuit commitBid(commitment: Bytes<32>): [] {
     const nul = bidder_nullifier(sk);
     assert(!nullifiers.member(disclose(nul)), "Already submitted a bid");
 
-    bid_commitment = disclose(commitment);
+    bid_commitments.insert(disclose(commitment));
     nullifiers.insert(disclose(nul));
 }
 
@@ -104,7 +103,7 @@ export circuit revealBid(): [] {
 
     // ZK-prove that commitment = hash(amount, nonce) — the bid is authentic
     const expected = computeBidCommitment(amount, nonce);
-    assert(bid_commitment == expected, "Bid commitment mismatch");
+    assert(bid_commitments.member(expected), "Bid commitment not found in ledger");
 
     // Update highest bid if this is greater — comparison is private
     const disclosed_amount = disclose(amount);

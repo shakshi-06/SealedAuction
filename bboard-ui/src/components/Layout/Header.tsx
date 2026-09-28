@@ -109,8 +109,8 @@ export const Header: React.FC = () => {
               disabled={isConnecting}
               startIcon={<AccountBalanceWalletIcon />}
               sx={{
-                background: '#ccff00',
-                color: '#000',
+                background: theme.palette.primary.main,
+                color: theme.palette.mode === 'dark' ? '#000' : '#fff',
                 fontWeight: 600,
                 px: 3,
                 py: 1.2,
@@ -119,7 +119,7 @@ export const Header: React.FC = () => {
                 fontFamily: 'Inter, sans-serif',
                 transition: 'all 0.2s',
                 '&:hover': {
-                  background: '#aacc00',
+                  background: theme.palette.mode === 'dark' ? '#aacc00' : theme.palette.primary.dark,
                   transform: 'scale(1.02)'
                 },
               }}
@@ -127,8 +127,8 @@ export const Header: React.FC = () => {
               {isConnecting ? 'Connecting...' : 'Connect wallet'}
             </Button>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(255,255,255,0.05)', p: 0.5, pr: 2, borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <Box sx={{ bgcolor: '#ccff00', color: '#000', px: 2, py: 0.75, borderRadius: '12px', fontWeight: '600', fontFamily: 'Inter' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', p: 0.5, pr: 2, borderRadius: '16px', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)' }}>
+              <Box sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.mode === 'dark' ? '#000' : '#fff', px: 2, py: 0.75, borderRadius: '12px', fontWeight: '600', fontFamily: 'Inter' }}>
                 {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
               </Box>
               <Button size="small" onClick={disconnect} sx={{ color: '#ff6b6b', textTransform: 'none', fontWeight: 'bold', fontFamily: 'Inter' }}>

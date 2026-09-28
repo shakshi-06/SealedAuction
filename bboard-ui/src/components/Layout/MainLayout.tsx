@@ -26,7 +26,7 @@ export const MainLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
         <Typography sx={{ color: theme.palette.text.secondary, fontFamily: 'Inter', fontSize: '0.85rem', mb: 2, fontWeight: 700, letterSpacing: '0.1em' }}>PREPROD TESTNET ACTIVE</Typography>
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', px: 2, py: 1, borderRadius: '8px', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
           <Typography sx={{ color: theme.palette.text.secondary, fontFamily: 'monospace', fontSize: '0.85rem' }}>Contract: 5a9cd8179b54c81863309dcfacd83f8207f0fc35a1ab79cc4ff524b334c8ae1e</Typography>
-          <IconButton size="small" onClick={() => navigator.clipboard.writeText('5a9cd8179b54c81863309dcfacd83f8207f0fc35a1ab79cc4ff524b334c8ae1e')} sx={{ color: '#ccff00' }}>
+          <IconButton size="small" onClick={() => navigator.clipboard.writeText('5a9cd8179b54c81863309dcfacd83f8207f0fc35a1ab79cc4ff524b334c8ae1e')} sx={{ color: theme.palette.primary.main }}>
             <ContentCopyIcon fontSize="small" />
           </IconButton>
         </Box>
