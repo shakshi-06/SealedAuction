@@ -64,14 +64,12 @@ describe(`Auction Contract (${network})`, () => {
     setNetworkId(config.networkId as any);
 
     aliceWallet = aliceSecret.kind === 'seed'
-      ? await FluentWalletBuilder.newWalletFromSeed(aliceSecret.value, envConfig)
-      : await FluentWalletBuilder.newWalletFromMnemonic(aliceSecret.value, envConfig);
-    await aliceWallet.start?.();
+      ? await FluentWalletBuilder.forEnvironment(envConfig).withSeed(aliceSecret.value).build()
+      : await FluentWalletBuilder.forEnvironment(envConfig).withMnemonic(aliceSecret.value).build();
 
     bobWallet = bobSecret.kind === 'seed'
-      ? await FluentWalletBuilder.newWalletFromSeed(bobSecret.value, envConfig)
-      : await FluentWalletBuilder.newWalletFromMnemonic(bobSecret.value, envConfig);
-    await bobWallet.start?.();
+      ? await FluentWalletBuilder.forEnvironment(envConfig).withSeed(bobSecret.value).build()
+      : await FluentWalletBuilder.forEnvironment(envConfig).withMnemonic(bobSecret.value).build();
 
     if (isRemote) {
       const aliceBalance = await waitForFunds(aliceWallet, envConfig, true, aliceWallet.unshieldedKeystore);

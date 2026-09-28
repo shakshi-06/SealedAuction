@@ -17,6 +17,8 @@ export const Header: React.FC = () => {
     { label: 'Home', path: '/' },
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Admin', path: '/admin' },
+    { label: 'Privacy', path: '/privacy' },
+    { label: 'Verify', path: '/verify' },
   ];
 
   return (

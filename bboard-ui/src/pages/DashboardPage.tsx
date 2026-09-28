@@ -79,6 +79,33 @@ export const DashboardPage = () => {
     }
   }, [session, address, fetchState]);
 
+  const downloadBackup = () => {
+    if (!localBid || !session) return;
+    const adminSk = getOrCreateSecret('admin', session.unshieldedAddress);
+    const bidderSk = getOrCreateSecret('bidder', session.unshieldedAddress);
+    const nonce = getOrCreateSecret(`nonce_${address}`, session.unshieldedAddress);
+    
+    const backup = {
+      address,
+      bidAmount: localBid,
+      secrets: {
+        adminSk: Array.from(adminSk),
+        bidderSk: Array.from(bidderSk),
+        nonce: Array.from(nonce)
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bid-backup-${address.substring(0,8)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleAction = async (action: 'commitBid' | 'advanceToReveal' | 'revealBid' | 'resolveAuction') => {
     if (!session || !address) return;
     setActionStatus({ type: 'info', message: `Executing ${action}... Please approve in wallet.` });
@@ -247,7 +274,10 @@ export const DashboardPage = () => {
               {contractLedger.phase === 1n && localBid && (
                 <Paper sx={{ p: 2, mb: 3, background: theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.1)' : 'rgba(170,204,0,0.1)', color: theme.palette.primary.main, border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.2)' : 'rgba(170,204,0,0.2)'}` }}>
                   <Typography variant="subtitle2" fontWeight="bold">Local Backup Found</Typography>
-                  <Typography variant="body2">Your unrevealed bid is {localBid} tokens. You can securely reveal it now.</Typography>
+                  <Typography variant="body2" mb={1}>Your unrevealed bid is {localBid} tokens. You can securely reveal it now.</Typography>
+                  <Button size="small" variant="outlined" sx={{ borderColor: 'inherit', color: 'inherit' }} onClick={downloadBackup}>
+                    Export Secret Backup
+                  </Button>
                 </Paper>
               )}
 

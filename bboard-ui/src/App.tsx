@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { MainLayout } from './components';
 import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { VerifyPage } from './pages/VerifyPage';
 import { useWallet } from './contexts/WalletContext';
 import GavelIcon from '@mui/icons-material/Gavel';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
@@ -436,6 +438,8 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/verify" element={<VerifyPage />} />
           </Routes>
         </MainLayout>
       </Box>

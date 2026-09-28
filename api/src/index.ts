@@ -190,7 +190,7 @@ export class BBoardAPI implements DeployedBBoardAPI {
           highestBid: state.highest_bid,
           isAuctioneer,
           isCommittedBidder: !!privateState?.bidAmount,
-          hasActiveBid: state.bid_commitment !== undefined,
+          hasActiveBid: ((state as any).bid_commitments?.size ?? 0n) > 0n,
         });
       } catch (err) {
         this.logger?.warn({ err }, 'State poll failed');

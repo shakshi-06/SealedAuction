@@ -10,4 +10,12 @@ export default defineConfig({
     singleFork: true,              // CRITICAL: never run tests in parallel
     fileParallelism: false,
   },
+  resolve: {
+    dedupe: [
+      '@midnight-ntwrk/ledger-v8',
+      '@midnight-ntwrk/compact-runtime',
+      '@midnight-ntwrk/midnight-js-contracts',
+      '@midnight-ntwrk/compact-js'
+    ]
+  }
 });
