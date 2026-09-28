@@ -4,7 +4,6 @@ import { createUnprovenDeployTx, submitTxAsync } from '@midnight-ntwrk/midnight-
 import { sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
 import { Contract, pureCircuits } from '../managed/contract/index.js';
 import { useWallet } from '../contexts/WalletContext';
-import { colors } from '../config/theme';
 import {
   Alert,
   Box,
@@ -17,6 +16,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useTheme
 } from '@mui/material';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
@@ -39,14 +39,23 @@ function getCompiledContract(state?: any) {
 
 const defaultTitle = 'Zero-Knowledge Artifact';
 const defaultDescription = 'A cryptographically sealed asset available for auction on Midnight.';
-const panelSx = {
-  border: `1px solid ${colors.line}`,
-  backgroundColor: 'rgba(255,255,255,0.025)',
-  boxShadow: 'none',
-};
 const monoSx = { fontFamily: '"DM Mono", monospace' };
 
 export const AdminPage: React.FC = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const paperText = theme.palette.text.primary;
+  const mutedText = theme.palette.text.secondary;
+  const redMain = theme.palette.primary.main;
+  const redSoft = theme.palette.error.main;
+  const divider = theme.palette.divider;
+
+  const panelSx = {
+    border: `1px solid ${divider}`,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)',
+    boxShadow: 'none',
+  };
+
   const { session, isConnected, connect, isConnecting } = useWallet();
   const [status, setStatus] = useState<'idle' | 'deploying' | 'deployed' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -108,13 +117,13 @@ export const AdminPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ pt: { xs: 6, md: 10 }, pb: { xs: 8, md: 14 } }}>
       <Box sx={{ maxWidth: 880, mb: { xs: 6, md: 9 } }}>
-        <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 11, letterSpacing: '0.14em', mb: 2 }}>
+        <Typography sx={{ ...monoSx, color: redSoft, fontSize: 11, letterSpacing: '0.14em', mb: 2 }}>
           ADMIN / AUCTION ROOM CREATION
         </Typography>
-        <Typography variant="h1" sx={{ color: colors.paper, fontSize: { xs: 44, md: 72 }, lineHeight: 0.98, mb: 3 }}>
+        <Typography variant="h1" sx={{ color: paperText, fontSize: { xs: 44, md: 72 }, lineHeight: 0.98, mb: 3 }}>
           Make the room before the bidding begins.
         </Typography>
-        <Typography sx={{ color: colors.muted, fontSize: { xs: 17, md: 20 }, lineHeight: 1.65, maxWidth: 700 }}>
+        <Typography sx={{ color: mutedText, fontSize: { xs: 17, md: 20 }, lineHeight: 1.65, maxWidth: 700 }}>
           Configure a sealed-bid auction, review its public presentation, then deploy a fresh contract to Midnight Preprod.
           The contract is the source of auction state. Your editorial metadata is kept locally for the room feed.
         </Typography>
@@ -124,18 +133,18 @@ export const AdminPage: React.FC = () => {
         <Paper sx={{ ...panelSx, p: { xs: 3, md: 5 } }}>
           <Stack direction="row" justifyContent="space-between" alignItems="start" sx={{ mb: 5 }}>
             <Box>
-              <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 1 }}>DEPLOYMENT BRIEF</Typography>
-              <Typography variant="h4" sx={{ color: colors.paper }}>Create an auction</Typography>
+              <Typography sx={{ ...monoSx, color: redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 1 }}>DEPLOYMENT BRIEF</Typography>
+              <Typography variant="h4" sx={{ color: paperText }}>Create an auction</Typography>
             </Box>
-            <LockOutlinedIcon sx={{ color: colors.redSoft, mt: 0.5 }} />
+            <LockOutlinedIcon sx={{ color: redSoft, mt: 0.5 }} />
           </Stack>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 5 }}>
             {[['01', 'Describe', 'Name the room.'], ['02', 'Review', 'Check the public card.'], ['03', 'Deploy', 'Publish on Preprod.']].map(([number, label, detail]) => (
-              <Box key={number} sx={{ borderTop: `2px solid ${number === '03' ? colors.red : colors.line}`, pt: 1.5 }}>
-                <Typography sx={{ ...monoSx, color: number === '03' ? colors.redSoft : colors.muted, fontSize: 11 }}>{number}</Typography>
-                <Typography sx={{ color: colors.paper, mt: 1, fontWeight: 600 }}>{label}</Typography>
-                <Typography sx={{ color: colors.quiet, fontSize: 12, mt: 0.5 }}>{detail}</Typography>
+              <Box key={number} sx={{ borderTop: `2px solid ${number === '03' ? redMain : divider}`, pt: 1.5 }}>
+                <Typography sx={{ ...monoSx, color: number === '03' ? redSoft : mutedText, fontSize: 11 }}>{number}</Typography>
+                <Typography sx={{ color: paperText, mt: 1, fontWeight: 600 }}>{label}</Typography>
+                <Typography sx={{ color: mutedText, fontSize: 12, mt: 0.5 }}>{detail}</Typography>
               </Box>
             ))}
           </Box>
@@ -160,7 +169,7 @@ export const AdminPage: React.FC = () => {
                 fullWidth
                 inputProps={{ maxLength: 300 }}
               />
-              <Typography sx={{ color: colors.quiet, fontSize: 12, lineHeight: 1.6 }}>
+              <Typography sx={{ color: mutedText, fontSize: 12, lineHeight: 1.6 }}>
                 Both fields are optional. They label the room in this browser and are not constructor arguments in auction.compact.
               </Typography>
 
@@ -177,25 +186,25 @@ export const AdminPage: React.FC = () => {
           )}
 
           {status === 'deploying' && (
-            <Box sx={{ border: `1px solid ${colors.line}`, p: 2.5, display: 'flex', gap: 2, alignItems: 'center' }}>
-              <CircularProgress size={18} sx={{ color: colors.redSoft }} />
-              <Typography sx={{ color: colors.paper, fontSize: 14 }}>Waiting for the wallet to sign and submit the deployment.</Typography>
+            <Box sx={{ border: `1px solid ${divider}`, p: 2.5, display: 'flex', gap: 2, alignItems: 'center' }}>
+              <CircularProgress size={18} sx={{ color: redSoft }} />
+              <Typography sx={{ color: paperText, fontSize: 14 }}>Waiting for the wallet to sign and submit the deployment.</Typography>
             </Box>
           )}
 
           {status === 'error' && errorMsg && (
-            <Alert severity="error" sx={{ mt: 3, borderRadius: 0, backgroundColor: 'rgba(179,38,45,0.12)', color: colors.paper }}>
+            <Alert severity="error" sx={{ mt: 3, borderRadius: 0, backgroundColor: 'rgba(179,38,45,0.12)', color: paperText }}>
               <Typography sx={{ fontWeight: 600, mb: 0.5 }}>Deployment failed</Typography>
               <Typography sx={{ ...monoSx, fontSize: 11, wordBreak: 'break-word' }}>{errorMsg}</Typography>
             </Alert>
           )}
 
           {status === 'deployed' && deployedAddress && (
-            <Box sx={{ mt: 2, border: `1px solid ${colors.red}`, p: { xs: 2.5, md: 3 }, backgroundColor: 'rgba(179,38,45,0.09)' }}>
-              <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 1 }}>DEPLOYMENT SUBMITTED</Typography>
-              <Typography sx={{ color: colors.paper, fontSize: 18, mb: 2 }}>Your room has an address.</Typography>
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ border: `1px solid ${colors.line}`, backgroundColor: colors.ink, p: 1.5 }}>
-                <Typography sx={{ ...monoSx, color: colors.paper, fontSize: 11, wordBreak: 'break-all', flexGrow: 1 }}>{deployedAddress}</Typography>
+            <Box sx={{ mt: 2, border: `1px solid ${redMain}`, p: { xs: 2.5, md: 3 }, backgroundColor: 'rgba(179,38,45,0.09)' }}>
+              <Typography sx={{ ...monoSx, color: redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 1 }}>DEPLOYMENT SUBMITTED</Typography>
+              <Typography sx={{ color: paperText, fontSize: 18, mb: 2 }}>Your room has an address.</Typography>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ border: `1px solid ${divider}`, backgroundColor: theme.palette.background.default, p: 1.5 }}>
+                <Typography sx={{ ...monoSx, color: paperText, fontSize: 11, wordBreak: 'break-all', flexGrow: 1 }}>{deployedAddress}</Typography>
                 <Tooltip title={copied ? 'Copied' : 'Copy address'}>
                   <IconButton onClick={handleCopy} aria-label="Copy contract address" size="small"><ContentCopyOutlinedIcon fontSize="small" /></IconButton>
                 </Tooltip>
@@ -210,22 +219,22 @@ export const AdminPage: React.FC = () => {
 
         <Box sx={{ display: 'grid', gap: 3 }}>
           <Paper sx={{ ...panelSx, p: { xs: 3, md: 4 } }}>
-            <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 3 }}>LIVE PREVIEW / PUBLIC CARD</Typography>
-            <Typography variant="h4" sx={{ color: colors.paper, mb: 1.5, overflowWrap: 'anywhere' }}>{title.trim() || defaultTitle}</Typography>
-            <Typography sx={{ color: colors.muted, lineHeight: 1.65, minHeight: 72, overflowWrap: 'anywhere' }}>{desc.trim() || defaultDescription}</Typography>
-            <Box sx={{ borderTop: `1px solid ${colors.line}`, mt: 4, pt: 2.5, display: 'grid', gap: 1.25 }}>
-              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: colors.quiet, fontSize: 12 }}>Network</Typography><Typography sx={{ ...monoSx, color: colors.paper, fontSize: 11 }}>MIDNIGHT PREPROD</Typography></Stack>
-              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: colors.quiet, fontSize: 12 }}>Phase</Typography><Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 11 }}>COMMIT</Typography></Stack>
-              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: colors.quiet, fontSize: 12 }}>Bids</Typography><Typography sx={{ ...monoSx, color: colors.paper, fontSize: 11 }}>SEALED</Typography></Stack>
+            <Typography sx={{ ...monoSx, color: redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 3 }}>LIVE PREVIEW / PUBLIC CARD</Typography>
+            <Typography variant="h4" sx={{ color: paperText, mb: 1.5, overflowWrap: 'anywhere' }}>{title.trim() || defaultTitle}</Typography>
+            <Typography sx={{ color: mutedText, lineHeight: 1.65, minHeight: 72, overflowWrap: 'anywhere' }}>{desc.trim() || defaultDescription}</Typography>
+            <Box sx={{ borderTop: `1px solid ${divider}`, mt: 4, pt: 2.5, display: 'grid', gap: 1.25 }}>
+              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: mutedText, fontSize: 12 }}>Network</Typography><Typography sx={{ ...monoSx, color: paperText, fontSize: 11 }}>MIDNIGHT PREPROD</Typography></Stack>
+              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: mutedText, fontSize: 12 }}>Phase</Typography><Typography sx={{ ...monoSx, color: redSoft, fontSize: 11 }}>COMMIT</Typography></Stack>
+              <Stack direction="row" justifyContent="space-between"><Typography sx={{ color: mutedText, fontSize: 12 }}>Bids</Typography><Typography sx={{ ...monoSx, color: paperText, fontSize: 11 }}>SEALED</Typography></Stack>
             </Box>
           </Paper>
 
           <Paper sx={{ ...panelSx, p: { xs: 3, md: 4 } }}>
-            <Typography sx={{ ...monoSx, color: colors.redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 2 }}>NETWORK NOTE</Typography>
-            <Typography sx={{ color: colors.paper, lineHeight: 1.65, fontSize: 14 }}>
+            <Typography sx={{ ...monoSx, color: redSoft, fontSize: 10, letterSpacing: '0.13em', mb: 2 }}>NETWORK NOTE</Typography>
+            <Typography sx={{ color: paperText, lineHeight: 1.65, fontSize: 14 }}>
               Deployments use your connected wallet and Midnight Preprod. The title, description, and recent room list are browser-local metadata. They do not alter the contract ledger.
             </Typography>
-            <Typography sx={{ ...monoSx, color: colors.quiet, fontSize: 10, lineHeight: 1.7, mt: 2 }}>
+            <Typography sx={{ ...monoSx, color: mutedText, fontSize: 10, lineHeight: 1.7, mt: 2 }}>
               LOCAL METADATA / RECENT_AUCTIONS
             </Typography>
           </Paper>

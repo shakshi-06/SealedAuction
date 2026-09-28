@@ -1,39 +1,52 @@
 import React from 'react';
-import { AppBar, Box, Button, Stack, Typography } from '@mui/material';
-import { useWallet } from '../../contexts';
+import { AppBar, Box, Button, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { useWallet, useAppTheme } from '../../contexts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ArrowOutwardRoundedIcon from '@mui/icons-material/ArrowOutwardRounded';
+import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 
 export const Header: React.FC = () => {
   const { connect, disconnect, isConnected, isConnecting, address } = useWallet();
+  const { mode, toggleTheme } = useAppTheme();
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isDark = mode === 'dark';
+  const paperText = theme.palette.text.primary;
+  const mutedText = theme.palette.text.secondary;
+  const redMain = theme.palette.primary.main;
+  const redSoft = theme.palette.error.main;
+  const divider = theme.palette.divider;
 
   const navItems = [
     { label: 'Overview', path: '/' },
     { label: 'Auction room', path: '/dashboard' },
     { label: 'Create auction', path: '/admin' },
+    { label: 'Privacy', path: '/privacy' },
+    { label: 'Verify', path: '/verify' },
   ];
 
   return (
-    <AppBar position="sticky" elevation={0} sx={{ background: 'rgba(11,11,11,0.88)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(244,241,236,0.08)', zIndex: 1100 }}>
+    <AppBar position="sticky" elevation={0} sx={{ background: isDark ? 'rgba(11,11,11,0.88)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${isDark ? 'rgba(244,241,236,0.08)' : 'rgba(0,0,0,0.08)'}`, zIndex: 1100 }}>
       <Box sx={{ width: 'min(1380px, calc(100% - 40px))', mx: 'auto', py: 1.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
         <Box onClick={() => navigate('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer', minWidth: 160 }}>
-          <Box sx={{ width: 34, height: 34, display: 'grid', placeItems: 'center', border: '1px solid #B3262D', color: '#F4F1EC', position: 'relative', '&::after': { content: '""', position: 'absolute', width: 8, height: 8, background: '#B3262D', right: -4, bottom: -4 } }}>
+          <Box sx={{ width: 34, height: 34, display: 'grid', placeItems: 'center', border: `1px solid ${redMain}`, color: paperText, position: 'relative', '&::after': { content: '""', position: 'absolute', width: 8, height: 8, background: redMain, right: -4, bottom: -4 } }}>
             <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 13, fontWeight: 500 }}>SA</Typography>
           </Box>
           <Box>
-            <Typography sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.03em', fontSize: 17, lineHeight: 1 }}>SealedAuction</Typography>
-            <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 9, color: '#A8A39D', letterSpacing: '0.14em', mt: 0.5 }}>PRIVATE MARKET</Typography>
+            <Typography sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.03em', fontSize: 17, lineHeight: 1, color: paperText }}>SealedAuction</Typography>
+            <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 9, color: mutedText, letterSpacing: '0.14em', mt: 0.5 }}>PRIVATE MARKET</Typography>
           </Box>
         </Box>
 
-        <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'none', lg: 'flex' }, background: '#151313', border: '1px solid #2A2928', p: 0.5 }}>
+        <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'none', lg: 'flex' }, background: isDark ? '#151313' : '#F7F5F2', border: `1px solid ${divider}`, p: 0.5 }}>
           {navItems.map((item) => {
             const active = location.pathname === item.path;
             return (
-              <Button key={item.path} onClick={() => navigate(item.path)} sx={{ px: 2, color: active ? '#F4F1EC' : '#8D8882', background: active ? '#2A2928' : 'transparent', '&:hover': { color: '#F4F1EC', background: '#211F1E' } }}>
+              <Button key={item.path} onClick={() => navigate(item.path)} sx={{ px: 2, color: active ? paperText : mutedText, background: active ? (isDark ? '#2A2928' : '#E8E5E1') : 'transparent', '&:hover': { color: paperText, background: isDark ? '#211F1E' : '#E8E5E1' } }}>
                 {item.label}
               </Button>
             );
@@ -41,8 +54,12 @@ export const Header: React.FC = () => {
         </Stack>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1.5, minWidth: 210 }}>
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, color: '#A8A39D', fontFamily: '"DM Mono", monospace', fontSize: 11 }}>
-            <Box sx={{ width: 6, height: 6, background: '#B3262D', borderRadius: '50%' }} />
+          <IconButton onClick={toggleTheme} sx={{ color: mutedText, '&:hover': { color: paperText } }}>
+            {isDark ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
+          </IconButton>
+
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 11 }}>
+            <Box sx={{ width: 6, height: 6, background: redMain, borderRadius: '50%' }} />
             PREPROD
           </Box>
           {!isConnected ? (
@@ -50,12 +67,12 @@ export const Header: React.FC = () => {
               {isConnecting ? 'Connecting' : 'Connect wallet'}
             </Button>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid #3A3735', background: '#151313', pl: 1.3, pr: 0.5, py: 0.5 }}>
-              <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: '#F4F1EC' }}>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}</Typography>
-              <Button size="small" onClick={disconnect} sx={{ minWidth: 0, px: 1, color: '#D95C61' }}>Exit</Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${divider}`, background: isDark ? '#151313' : '#F7F5F2', pl: 1.3, pr: 0.5, py: 0.5 }}>
+              <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: paperText }}>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}</Typography>
+              <Button size="small" onClick={disconnect} sx={{ minWidth: 0, px: 1, color: redSoft }}>Exit</Button>
             </Box>
           )}
-          <ArrowOutwardRoundedIcon sx={{ display: { xs: 'none', sm: 'block' }, color: '#6E6A65', fontSize: 18 }} />
+          <ArrowOutwardRoundedIcon sx={{ display: { xs: 'none', sm: 'block' }, color: mutedText, fontSize: 18 }} />
         </Box>
       </Box>
     </AppBar>

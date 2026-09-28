@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { createUnprovenCallTx, submitTxAsync } from '@midnight-ntwrk/midnight-js-contracts';
-import { Box, Button, Chip, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, Paper, Stack, TextField, Typography, useTheme } from '@mui/material';
 import Grid from '@mui/material/GridLegacy';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
@@ -23,20 +23,31 @@ function getCompiledContract(privateState?: any) {
   return CompiledContract.make('auction', Contract).pipe(CompiledContract.withWitnesses(witnesses), CompiledContract.withCompiledFileAssets(new URL('/managed', window.location.origin).toString())) as any;
 }
 
-const red = '#B3262D';
-const paper = '#F4F1EC';
-const muted = '#A8A39D';
-const line = '#2A2928';
-
 const phaseCopy = [
   { label: 'Commit open', detail: 'Submit a sealed offer while the room is accepting bids.' },
   { label: 'Reveal open', detail: 'Prove that your revealed offer matches your commitment.' },
   { label: 'Resolved', detail: 'The room has been finalized on-chain.' },
 ];
 
-const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown> }>> = ({ children, sx }) => <Paper elevation={0} sx={{ background: 'rgba(20,19,19,0.9)', border: `1px solid ${line}`, borderRadius: 0, ...sx }}>{children}</Paper>;
+const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown> }>> = ({ children, sx }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  return (
+    <Paper elevation={0} sx={{ background: isDark ? 'rgba(20,19,19,0.9)' : 'rgba(255,255,255,0.9)', border: `1px solid ${theme.palette.divider}`, borderRadius: 0, ...sx }}>
+      {children}
+    </Paper>
+  );
+};
 
 export const DashboardPage: React.FC = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const paperText = theme.palette.text.primary;
+  const mutedText = theme.palette.text.secondary;
+  const redMain = theme.palette.primary.main;
+  const redSoft = theme.palette.error.main;
+  const divider = theme.palette.divider;
+
   const { session, isConnected, connect } = useWallet();
   const [searchParams] = useSearchParams();
   const urlAddress = searchParams.get('address');
@@ -129,12 +140,12 @@ export const DashboardPage: React.FC = () => {
     window.setTimeout(() => setActionStatus(null), 9000);
   };
 
-  if (!isConnected) return <Container maxWidth="sm" sx={{ py: 14 }}><Surface sx={{ p: { xs: 3, md: 5 }, textAlign: 'center' }}><LockOutlinedIcon sx={{ color: red, fontSize: 32, mb: 2 }} /><Typography variant="h4" sx={{ color: paper, mb: 1 }}>Enter the auction room</Typography><Typography sx={{ color: muted, lineHeight: 1.7, mb: 3 }}>Connect a Midnight wallet to sync the room state and participate in a sealed auction.</Typography><Button variant="contained" onClick={() => connect()} endIcon={<OpenInNewRoundedIcon />}>Connect wallet</Button></Surface></Container>;
+  if (!isConnected) return <Container maxWidth="sm" sx={{ py: 14 }}><Surface sx={{ p: { xs: 3, md: 5 }, textAlign: 'center' }}><LockOutlinedIcon sx={{ color: redMain, fontSize: 32, mb: 2 }} /><Typography variant="h4" sx={{ color: paperText, mb: 1 }}>Enter the auction room</Typography><Typography sx={{ color: mutedText, lineHeight: 1.7, mb: 3 }}>Connect a Midnight wallet to sync the room state and participate in a sealed auction.</Typography><Button variant="contained" onClick={() => connect()} endIcon={<OpenInNewRoundedIcon />}>Connect wallet</Button></Surface></Container>;
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 6, md: 9 } }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'end' }} spacing={3} sx={{ mb: 5 }}>
-        <Box><Typography sx={{ color: red, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>AUCTION ROOM / PRIVATE ACCESS</Typography><Typography variant="h2" sx={{ color: paper, fontSize: { xs: 42, md: 60 } }}>Participate without broadcasting.</Typography><Typography sx={{ color: muted, mt: 1, maxWidth: 590, lineHeight: 1.7 }}>The room state is public. Your sealed offer is not. Keep this tab available through the reveal phase.</Typography></Box>
+        <Box><Typography sx={{ color: redMain, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>AUCTION ROOM / PRIVATE ACCESS</Typography><Typography variant="h2" sx={{ color: paperText, fontSize: { xs: 42, md: 60 } }}>Participate without broadcasting.</Typography><Typography sx={{ color: mutedText, mt: 1, maxWidth: 590, lineHeight: 1.7 }}>The room state is public. Your sealed offer is not. Keep this tab available through the reveal phase.</Typography></Box>
         <Stack direction="row" spacing={1}><Button variant="outlined" startIcon={<ShareOutlinedIcon />} onClick={() => setShareOpen(true)} disabled={!address}>Share room</Button><Button variant="outlined" onClick={() => void fetchState()} disabled={loadingState}>{loadingState ? <CircularProgress size={18} /> : 'Sync state'}</Button></Stack>
       </Stack>
 
@@ -142,36 +153,44 @@ export const DashboardPage: React.FC = () => {
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'end' }}><TextField fullWidth label="Auction contract address" value={address} onChange={(event) => setAddress(event.target.value)} InputProps={{ sx: { fontFamily: '"DM Mono", monospace', fontSize: 12 } }} /><Button variant="contained" onClick={() => void fetchState()} disabled={loadingState} sx={{ minWidth: 120 }}>Load room</Button></Stack>
       </Surface>
 
-      {!contractLedger && <Surface sx={{ p: { xs: 4, md: 7 }, textAlign: 'center', borderStyle: 'dashed' }}><Typography sx={{ color: muted }}>{address ? 'No indexed room state found. Check the address and sync again.' : 'Enter a contract address to load an auction room.'}</Typography></Surface>}
+      {!contractLedger && <Surface sx={{ p: { xs: 4, md: 7 }, textAlign: 'center', borderStyle: 'dashed' }}><Typography sx={{ color: mutedText }}>{address ? 'No indexed room state found. Check the address and sync again.' : 'Enter a contract address to load an auction room.'}</Typography></Surface>}
 
       {contractLedger && <Grid container spacing={2.5}>
         <Grid item xs={12} md={5}>
-          <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%', position: 'relative', overflow: 'hidden', '&::after': { content: '""', position: 'absolute', width: 220, height: 220, border: '1px solid #3A3735', right: -90, bottom: -90, transform: 'rotate(45deg)' } }}>
+          <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%', position: 'relative', overflow: 'hidden', '&::after': { content: '""', position: 'absolute', width: 220, height: 220, border: `1px solid ${isDark ? '#3A3735' : '#D0CDC8'}`, right: -90, bottom: -90, transform: 'rotate(45deg)' } }}>
             <Stack justifyContent="space-between" sx={{ height: '100%', position: 'relative', zIndex: 1 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="start"><Box><Typography sx={{ color: muted, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>ROOM OBJECT</Typography><Typography sx={{ color: paper, fontSize: 25, mt: 1 }}>{title}</Typography></Box><Chip label={currentPhase.label.toUpperCase()} size="small" sx={{ color: '#D95C61', border: '1px solid #6D292D', background: 'rgba(179,38,45,0.1)' }} /></Stack>
-              <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 250, py: 3 }}><Box sx={{ width: 180, height: 180, border: `1px solid ${red}`, transform: 'rotate(45deg)', display: 'grid', placeItems: 'center', background: 'rgba(179,38,45,0.06)' }}><LockOutlinedIcon sx={{ color: '#D95C61', fontSize: 38, transform: 'rotate(-45deg)' }} /></Box></Box>
-              <Box><Typography sx={{ color: muted, lineHeight: 1.65, fontSize: 14, mb: 2 }}>{description}</Typography><Typography sx={{ color: '#6E6A65', fontFamily: '"DM Mono", monospace', fontSize: 10, wordBreak: 'break-all' }}>{address}</Typography></Box>
+              <Stack direction="row" justifyContent="space-between" alignItems="start"><Box><Typography sx={{ color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>ROOM OBJECT</Typography><Typography sx={{ color: paperText, fontSize: 25, mt: 1 }}>{title}</Typography></Box><Chip label={currentPhase.label.toUpperCase()} size="small" sx={{ color: redSoft, border: `1px solid ${redMain}`, background: 'rgba(179,38,45,0.1)' }} /></Stack>
+              <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 250, py: 3 }}><Box sx={{ width: 180, height: 180, border: `1px solid ${redMain}`, transform: 'rotate(45deg)', display: 'grid', placeItems: 'center', background: 'rgba(179,38,45,0.06)' }}><LockOutlinedIcon sx={{ color: redSoft, fontSize: 38, transform: 'rotate(-45deg)' }} /></Box></Box>
+              <Box><Typography sx={{ color: mutedText, lineHeight: 1.65, fontSize: 14, mb: 2 }}>{description}</Typography><Typography sx={{ color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, wordBreak: 'break-all' }}>{address}</Typography></Box>
             </Stack>
           </Surface>
         </Grid>
         <Grid item xs={12} md={7}>
           <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%' }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="start" sx={{ mb: 4 }}><Box><Typography sx={{ color: muted, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>ROOM STATUS</Typography><Typography variant="h4" sx={{ color: paper, mt: 1 }}>{currentPhase.label}</Typography><Typography sx={{ color: muted, mt: 0.7, fontSize: 14 }}>{currentPhase.detail}</Typography></Box><Typography sx={{ color: '#D95C61', fontFamily: '"DM Mono", monospace', fontSize: 11 }}>ROUND {contractLedger.round.toString().padStart(2, '0')}</Typography></Stack>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, mb: 4 }}>{['Commit', 'Reveal', 'Resolve'].map((label, index) => <Box key={label} sx={{ borderTop: `3px solid ${index <= phase ? red : '#3A3735'}`, pt: 1.5 }}><Typography sx={{ color: index <= phase ? paper : '#6E6A65', fontSize: 13 }}>{label}</Typography><Typography sx={{ color: '#6E6A65', fontFamily: '"DM Mono", monospace', fontSize: 10, mt: 0.5 }}>{index < phase ? 'COMPLETE' : index === phase ? 'CURRENT' : 'LOCKED'}</Typography></Box>)}</Box>
+            <Stack direction="row" justifyContent="space-between" alignItems="start" sx={{ mb: 4 }}><Box><Typography sx={{ color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>ROOM STATUS</Typography><Typography variant="h4" sx={{ color: paperText, mt: 1 }}>{currentPhase.label}</Typography><Typography sx={{ color: mutedText, mt: 0.7, fontSize: 14 }}>{currentPhase.detail}</Typography></Box><Typography sx={{ color: redSoft, fontFamily: '"DM Mono", monospace', fontSize: 11 }}>ROUND {contractLedger.round.toString().padStart(2, '0')}</Typography></Stack>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, mb: 4 }}>{['Commit', 'Reveal', 'Resolve'].map((label, index) => <Box key={label} sx={{ borderTop: `3px solid ${index <= phase ? redMain : (isDark ? '#3A3735' : '#D0CDC8')}`, pt: 1.5 }}><Typography sx={{ color: index <= phase ? paperText : mutedText, fontSize: 13 }}>{label}</Typography><Typography sx={{ color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, mt: 0.5 }}>{index < phase ? 'COMPLETE' : index === phase ? 'CURRENT' : 'LOCKED'}</Typography></Box>)}</Box>
             <Grid container spacing={1.5} sx={{ mb: 4 }}><Grid item xs={6}><Metric label="Highest revealed" value={contractLedger.highest_bid.toString()} suffix="TOK" /></Grid><Grid item xs={6}><Metric label="Your local bid" value={localBid ? 'SAVED' : 'NONE'} suffix="" /></Grid></Grid>
-            {actionStatus && <Box sx={{ p: 2, border: `1px solid ${actionStatus.type === 'error' ? '#8F3439' : '#6D292D'}`, background: actionStatus.type === 'error' ? 'rgba(179,38,45,0.12)' : 'rgba(179,38,45,0.08)', mb: 3 }}><Stack direction="row" spacing={1.5} alignItems="center">{actionStatus.type === 'info' ? <CircularProgress size={16} sx={{ color: '#D95C61' }} /> : <CheckCircleOutlineRoundedIcon sx={{ color: actionStatus.type === 'error' ? '#D95C61' : '#D95C61', fontSize: 18 }} />}<Typography sx={{ color: actionStatus.type === 'error' ? '#D95C61' : paper, fontSize: 13 }}>{actionStatus.message}</Typography></Stack>{actionStatus.type === 'success' && <Button href={`https://preprod.midnightexplorer.com/contracts/${address}`} target="_blank" endIcon={<OpenInNewRoundedIcon />} sx={{ color: '#D95C61', p: 0, mt: 1 }}>View transaction context</Button>}</Box>}
-            {phase === 0 && <Box><Typography sx={{ color: paper, fontSize: 20, mb: 1 }}>Place a sealed bid</Typography><Typography sx={{ color: muted, fontSize: 14, lineHeight: 1.6, mb: 2 }}>The amount is committed to the room as a cryptographic hash. Save the local receipt before leaving.</Typography><Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}><TextField fullWidth label="Private bid amount" value={bidAmount} onChange={(event) => setBidAmount(event.target.value.replace(/[^0-9]/g, ''))} /><Button variant="contained" onClick={() => void handleAction('commitBid')} disabled={!bidAmount}>Seal bid</Button></Stack></Box>}
-            {phase === 1 && <Box><Typography sx={{ color: paper, fontSize: 20, mb: 1 }}>Reveal your bid</Typography><Typography sx={{ color: muted, fontSize: 14, lineHeight: 1.6, mb: 2 }}>{localBid ? `A private receipt for ${localBid} TOK is available on this device.` : 'No local receipt was found. Restore your private bid before continuing.'}</Typography><Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}><Button variant="contained" onClick={() => void handleAction('revealBid')} disabled={!localBid}>Reveal and prove</Button>{localBid && <Button variant="outlined" onClick={downloadBackup}>Export receipt</Button>}</Stack></Box>}
-            {phase === 2 && <Box sx={{ border: '1px solid #6D292D', p: 2.5, background: 'rgba(179,38,45,0.08)' }}><Typography sx={{ color: '#D95C61', fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>ROOM RESOLVED</Typography><Typography sx={{ color: paper, fontSize: 26, mt: 1 }}>{contractLedger.highest_bid.toString()} TOK</Typography><Typography sx={{ color: muted, fontSize: 13, mt: 0.5 }}>Final highest revealed bid recorded by the contract.</Typography></Box>}
-            <Divider sx={{ borderColor: line, my: 4 }} />
+            {actionStatus && <Box sx={{ p: 2, border: `1px solid ${actionStatus.type === 'error' ? '#8F3439' : redMain}`, background: actionStatus.type === 'error' ? 'rgba(179,38,45,0.12)' : 'rgba(179,38,45,0.08)', mb: 3 }}><Stack direction="row" spacing={1.5} alignItems="center">{actionStatus.type === 'info' ? <CircularProgress size={16} sx={{ color: redSoft }} /> : <CheckCircleOutlineRoundedIcon sx={{ color: redSoft, fontSize: 18 }} />}<Typography sx={{ color: actionStatus.type === 'error' ? redSoft : paperText, fontSize: 13 }}>{actionStatus.message}</Typography></Stack>{actionStatus.type === 'success' && <Button href={`https://preprod.midnightexplorer.com/contracts/${address}`} target="_blank" endIcon={<OpenInNewRoundedIcon />} sx={{ color: redSoft, p: 0, mt: 1 }}>View transaction context</Button>}</Box>}
+            {phase === 0 && <Box><Typography sx={{ color: paperText, fontSize: 20, mb: 1 }}>Place a sealed bid</Typography><Typography sx={{ color: mutedText, fontSize: 14, lineHeight: 1.6, mb: 2 }}>The amount is committed to the room as a cryptographic hash. Save the local receipt before leaving.</Typography><Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}><TextField fullWidth label="Private bid amount" value={bidAmount} onChange={(event) => setBidAmount(event.target.value.replace(/[^0-9]/g, ''))} /><Button variant="contained" onClick={() => void handleAction('commitBid')} disabled={!bidAmount}>Seal bid</Button></Stack></Box>}
+            {phase === 1 && <Box><Typography sx={{ color: paperText, fontSize: 20, mb: 1 }}>Reveal your bid</Typography><Typography sx={{ color: mutedText, fontSize: 14, lineHeight: 1.6, mb: 2 }}>{localBid ? `A private receipt for ${localBid} TOK is available on this device.` : 'No local receipt was found. Restore your private bid before continuing.'}</Typography><Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}><Button variant="contained" onClick={() => void handleAction('revealBid')} disabled={!localBid}>Reveal and prove</Button>{localBid && <Button variant="outlined" onClick={downloadBackup}>Export receipt</Button>}</Stack></Box>}
+            {phase === 2 && <Box sx={{ border: `1px solid ${redMain}`, p: 2.5, background: 'rgba(179,38,45,0.08)' }}><Typography sx={{ color: redSoft, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.12em' }}>ROOM RESOLVED</Typography><Typography sx={{ color: paperText, fontSize: 26, mt: 1 }}>{contractLedger.highest_bid.toString()} TOK</Typography><Typography sx={{ color: mutedText, fontSize: 13, mt: 0.5 }}>Final highest revealed bid recorded by the contract.</Typography></Box>}
+            <Divider sx={{ borderColor: divider, my: 4 }} />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}><Button variant="outlined" disabled={phase !== 0} onClick={() => void handleAction('advanceToReveal')}>Open reveal phase</Button><Button variant="outlined" disabled={phase !== 1} onClick={() => void handleAction('resolveAuction')}>Resolve room</Button></Stack>
           </Surface>
         </Grid>
       </Grid>}
 
-      <Dialog open={shareOpen} onClose={() => setShareOpen(false)} fullWidth maxWidth="sm"><DialogTitle sx={{ color: paper }}>Share this auction room</DialogTitle><DialogContent><Typography sx={{ color: muted, lineHeight: 1.7, mb: 2 }}>Send this link to participants. The contract address is public, while each bid remains private until reveal.</Typography><TextField fullWidth value={shareUrl} InputProps={{ readOnly: true, sx: { fontFamily: '"DM Mono", monospace', fontSize: 12 } }} /></DialogContent><DialogActions><Button onClick={() => setShareOpen(false)}>Close</Button><Button variant="contained" startIcon={<ContentCopyOutlinedIcon />} onClick={() => { void navigator.clipboard.writeText(shareUrl); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }}>{copied ? 'Copied' : 'Copy link'}</Button></DialogActions></Dialog>
+      <Dialog open={shareOpen} onClose={() => setShareOpen(false)} fullWidth maxWidth="sm"><DialogTitle sx={{ color: paperText }}>Share this auction room</DialogTitle><DialogContent><Typography sx={{ color: mutedText, lineHeight: 1.7, mb: 2 }}>Send this link to participants. The contract address is public, while each bid remains private until reveal.</Typography><TextField fullWidth value={shareUrl} InputProps={{ readOnly: true, sx: { fontFamily: '"DM Mono", monospace', fontSize: 12 } }} /></DialogContent><DialogActions><Button onClick={() => setShareOpen(false)}>Close</Button><Button variant="contained" startIcon={<ContentCopyOutlinedIcon />} onClick={() => { void navigator.clipboard.writeText(shareUrl); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }}>{copied ? 'Copied' : 'Copy link'}</Button></DialogActions></Dialog>
     </Container>
   );
 };
 
-const Metric: React.FC<{ label: string; value: string; suffix: string }> = ({ label, value, suffix }) => <Box sx={{ p: 2, border: `1px solid ${line}`, background: 'rgba(255,255,255,0.02)' }}><Typography sx={{ color: muted, fontSize: 12 }}>{label}</Typography><Typography sx={{ color: paper, fontFamily: '"DM Mono", monospace', fontSize: 20, mt: 1 }}>{value} <Box component="span" sx={{ color: '#6E6A65', fontSize: 10 }}>{suffix}</Box></Typography></Box>;
+const Metric: React.FC<{ label: string; value: string; suffix: string }> = ({ label, value, suffix }) => {
+  const theme = useTheme();
+  return (
+    <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+      <Typography sx={{ color: theme.palette.text.secondary, fontSize: 12 }}>{label}</Typography>
+      <Typography sx={{ color: theme.palette.text.primary, fontFamily: '"DM Mono", monospace', fontSize: 20, mt: 1 }}>{value} <Box component="span" sx={{ color: theme.palette.text.secondary, fontSize: 10 }}>{suffix}</Box></Typography>
+    </Box>
+  );
+};
