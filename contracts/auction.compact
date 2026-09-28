@@ -106,10 +106,10 @@ export circuit revealBid(): [] {
 
     // ZK-prove that commitment = hash(amount, nonce) — the bid is authentic
     const expected = computeBidCommitment(amount, nonce);
-    assert(bid_commitments.member(expected), "Bid commitment not found in ledger");
-    assert(!revealed_bids.member(expected), "Bid already revealed");
+    assert(bid_commitments.member(disclose(expected)), "Bid commitment not found in ledger");
+    assert(!revealed_bids.member(disclose(expected)), "Bid already revealed");
 
-    revealed_bids.insert(expected);
+    revealed_bids.insert(disclose(expected));
 
     // Update highest bid if this is greater — comparison is private
     const disclosed_amount = disclose(amount);
