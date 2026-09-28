@@ -33,7 +33,7 @@ const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown> }
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   return (
-    <Paper elevation={0} sx={{ background: isDark ? 'rgba(20,19,19,0.9)' : 'rgba(255,255,255,0.9)', border: `1px solid ${theme.palette.divider}`, borderRadius: 0, ...sx }}>
+    <Paper elevation={0} sx={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, boxShadow: isDark ? 'none' : '0 4px 24px rgba(0,0,0,0.04)', ...sx }}>
       {children}
     </Paper>
   );
@@ -188,7 +188,7 @@ export const DashboardPage: React.FC = () => {
 const Metric: React.FC<{ label: string; value: string; suffix: string }> = ({ label, value, suffix }) => {
   const theme = useTheme();
   return (
-    <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+    <Box sx={{ p: 2, borderRadius: 1.5, border: `1px solid ${theme.palette.divider}`, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)' }}>
       <Typography sx={{ color: theme.palette.text.secondary, fontSize: 12 }}>{label}</Typography>
       <Typography sx={{ color: theme.palette.text.primary, fontFamily: '"DM Mono", monospace', fontSize: 20, mt: 1 }}>{value} <Box component="span" sx={{ color: theme.palette.text.secondary, fontSize: 10 }}>{suffix}</Box></Typography>
     </Box>

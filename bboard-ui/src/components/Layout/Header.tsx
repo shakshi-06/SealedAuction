@@ -30,7 +30,7 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <AppBar position="sticky" elevation={0} sx={{ background: isDark ? 'rgba(11,11,11,0.88)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${isDark ? 'rgba(244,241,236,0.08)' : 'rgba(0,0,0,0.08)'}`, zIndex: 1100 }}>
+    <AppBar position="sticky" elevation={0} sx={{ background: isDark ? 'rgba(11,11,11,0.88)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${divider}`, zIndex: 1100 }}>
       <Box sx={{ width: 'min(1380px, calc(100% - 40px))', mx: 'auto', py: 1.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
         <Box onClick={() => navigate('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer', minWidth: 160 }}>
           <Box sx={{ width: 34, height: 34, display: 'grid', placeItems: 'center', border: `1px solid ${redMain}`, color: paperText, position: 'relative', '&::after': { content: '""', position: 'absolute', width: 8, height: 8, background: redMain, right: -4, bottom: -4 } }}>
@@ -42,11 +42,11 @@ export const Header: React.FC = () => {
           </Box>
         </Box>
 
-        <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'none', lg: 'flex' }, background: isDark ? '#151313' : '#F7F5F2', border: `1px solid ${divider}`, p: 0.5 }}>
+        <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'none', lg: 'flex' }, background: theme.palette.background.default, borderRadius: 1.5, border: `1px solid ${divider}`, p: 0.5 }}>
           {navItems.map((item) => {
             const active = location.pathname === item.path;
             return (
-              <Button key={item.path} onClick={() => navigate(item.path)} sx={{ px: 2, color: active ? paperText : mutedText, background: active ? (isDark ? '#2A2928' : '#E8E5E1') : 'transparent', '&:hover': { color: paperText, background: isDark ? '#211F1E' : '#E8E5E1' } }}>
+              <Button key={item.path} onClick={() => navigate(item.path)} sx={{ px: 2, color: active ? paperText : mutedText, background: active ? theme.palette.background.paper : 'transparent', boxShadow: active && !isDark ? '0 1px 4px rgba(0,0,0,0.05)' : 'none', '&:hover': { color: paperText, background: isDark ? '#211F1E' : '#F5F5F5' } }}>
                 {item.label}
               </Button>
             );
@@ -67,7 +67,7 @@ export const Header: React.FC = () => {
               {isConnecting ? 'Connecting' : 'Connect wallet'}
             </Button>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${divider}`, background: isDark ? '#151313' : '#F7F5F2', pl: 1.3, pr: 0.5, py: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${divider}`, borderRadius: 1.5, background: theme.palette.background.default, pl: 1.3, pr: 0.5, py: 0.5 }}>
               <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: paperText }}>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}</Typography>
               <Button size="small" onClick={disconnect} sx={{ minWidth: 0, px: 1, color: redSoft }}>Exit</Button>
             </Box>

@@ -18,7 +18,7 @@ const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown>; 
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   return (
-    <Paper className={className} onClick={onClick} elevation={0} sx={{ background: isDark ? 'rgba(20,19,19,0.86)' : 'rgba(255,255,255,0.86)', border: `1px solid ${theme.palette.divider}`, borderRadius: 0, ...sx }}>
+    <Paper className={className} onClick={onClick} elevation={0} sx={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, boxShadow: isDark ? 'none' : '0 4px 24px rgba(0,0,0,0.04)', ...sx }}>
       {children}
     </Paper>
   );
@@ -61,7 +61,7 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ borderBottom: `1px solid ${divider}`, overflow: 'hidden', whiteSpace: 'nowrap', background: isDark ? '#111010' : '#EFECE7' }}>
+      <Box sx={{ borderBottom: `1px solid ${divider}`, overflow: 'hidden', whiteSpace: 'nowrap', background: isDark ? '#111010' : '#FFFFFF' }}>
         <Box sx={{ display: 'inline-flex', minWidth: '200%', animation: 'marquee 32s linear infinite', py: 1.2 }}>
           {[0, 1, 2, 3].map((item) => (
             <Typography key={item} sx={{ px: 5, color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em' }}>
@@ -171,7 +171,7 @@ const Home: React.FC = () => {
             </Surface>
           </Grid>
           <Grid item xs={12} md={5}>
-            <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%', background: isDark ? '#1C1A1A' : '#EFECE7', color: paperText, borderColor: divider }}>
+            <Surface sx={{ p: { xs: 3, md: 4 }, height: '100%', background: isDark ? '#1C1A1A' : '#F5F5F5', color: paperText, borderColor: divider }}>
               <Typography sx={{ color: redMain, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 2 }}>THREE PHASES</Typography>
               <Stack spacing={2.5}>
                 {[['01', 'Commit', 'Submit a sealed offer.'], ['02', 'Reveal', 'Prove the offer matches.'], ['03', 'Resolve', 'Finalize the highest valid bid.']].map(([number, title, text]) => <Stack key={number} direction="row" spacing={2}><Typography sx={{ color: redMain, fontFamily: '"DM Mono", monospace', fontSize: 12, pt: 0.3 }}>{number}</Typography><Box><Typography sx={{ color: paperText, fontSize: 18 }}>{title}</Typography><Typography sx={{ color: mutedText, fontSize: 13, mt: 0.4 }}>{text}</Typography></Box></Stack>)}

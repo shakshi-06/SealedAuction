@@ -2,18 +2,18 @@ import { createTheme, ThemeOptions } from '@mui/material';
 
 export const colors = {
   ink: '#0B0B0B',
-  inkLight: '#1A1919',
+  inkLight: '#141414',
   paper: '#F4F1EC',
-  paperDark: '#E3E0DB',
   white: '#FFFFFF',
   red: '#B3262D',
   redDark: '#7F171D',
   redSoft: '#D95C61',
   lineDark: '#2A2928',
-  lineLight: '#E0DCD6',
+  lineLight: '#EAEAEA',
   mutedDark: '#A8A39D',
-  mutedLight: '#6E6A65',
+  mutedLight: '#666666',
   quiet: '#6E6A65',
+  bgLight: '#FAFAFA',
 };
 
 export const getAppTheme = (mode: 'light' | 'dark') => {
@@ -25,11 +25,11 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
       primary: { main: colors.red, contrastText: colors.white },
       secondary: { main: isDark ? colors.paper : colors.ink },
       background: { 
-        default: isDark ? colors.ink : colors.paper, 
+        default: isDark ? colors.ink : colors.bgLight, 
         paper: isDark ? colors.inkLight : colors.white 
       },
       text: { 
-        primary: isDark ? colors.paper : colors.ink, 
+        primary: isDark ? colors.paper : '#111111', 
         secondary: isDark ? colors.mutedDark : colors.mutedLight 
       },
       divider: isDark ? colors.lineDark : colors.lineLight,
@@ -54,7 +54,7 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
         styleOverrides: {
           ':root': { colorScheme: mode },
           '::selection': { backgroundColor: colors.red, color: colors.white },
-          body: { backgroundColor: isDark ? colors.ink : colors.paper },
+          body: { backgroundColor: isDark ? colors.ink : colors.bgLight },
         },
       },
       MuiPaper: {
@@ -64,7 +64,7 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
       },
       MuiButton: {
         styleOverrides: {
-          root: { borderRadius: 2, minHeight: 42, paddingInline: 18 },
+          root: { borderRadius: 4, minHeight: 42, paddingInline: 18 },
           contained: {
             backgroundColor: colors.red,
             color: colors.white,
@@ -72,18 +72,18 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
             '&:hover': { backgroundColor: colors.redDark, boxShadow: 'none' },
           },
           outlined: {
-            borderColor: isDark ? '#4A4643' : '#C2BEB9',
-            color: isDark ? colors.paper : colors.ink,
-            '&:hover': { borderColor: colors.redSoft, backgroundColor: 'rgba(179, 38, 45, 0.08)' },
+            borderColor: isDark ? '#4A4643' : '#D4D4D4',
+            color: isDark ? colors.paper : '#111111',
+            '&:hover': { borderColor: colors.redSoft, backgroundColor: 'rgba(179, 38, 45, 0.04)' },
           },
         },
       },
       MuiIconButton: {
         styleOverrides: {
           root: { 
-            borderRadius: 2, 
-            color: isDark ? colors.paper : colors.ink, 
-            '&:hover': { color: colors.redSoft, backgroundColor: 'rgba(179, 38, 45, 0.12)' } 
+            borderRadius: 4, 
+            color: isDark ? colors.paper : '#111111', 
+            '&:hover': { color: colors.redSoft, backgroundColor: 'rgba(179, 38, 45, 0.08)' } 
           },
         },
       },
@@ -93,20 +93,20 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
             '& .MuiInputLabel-root': { color: isDark ? colors.mutedDark : colors.mutedLight },
             '& .MuiInputLabel-root.Mui-focused': { color: colors.redSoft },
             '& .MuiOutlinedInput-root': {
-              color: isDark ? colors.paper : colors.ink,
-              backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)',
-              '& fieldset': { borderColor: isDark ? '#3A3735' : '#D0CDC8' },
-              '&:hover fieldset': { borderColor: isDark ? '#5A5550' : '#A09C97' },
+              color: isDark ? colors.paper : '#111111',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : colors.white,
+              '& fieldset': { borderColor: isDark ? '#3A3735' : '#E0E0E0' },
+              '&:hover fieldset': { borderColor: isDark ? '#5A5550' : '#BDBDBD' },
               '&.Mui-focused fieldset': { borderColor: colors.redSoft },
             },
           },
         },
       },
       MuiChip: {
-        styleOverrides: { root: { borderRadius: 2, fontFamily: '"IBM Plex Mono", monospace', letterSpacing: '0.05em' } },
+        styleOverrides: { root: { borderRadius: 4, fontFamily: '"IBM Plex Mono", monospace', letterSpacing: '0.05em' } },
       },
       MuiDialog: {
-        styleOverrides: { paper: { backgroundColor: isDark ? '#151313' : colors.white, border: `1px solid ${isDark ? colors.lineDark : colors.lineLight}`, backgroundImage: 'none' } },
+        styleOverrides: { paper: { backgroundColor: isDark ? '#151313' : colors.white, border: `1px solid ${isDark ? colors.lineDark : colors.lineLight}`, backgroundImage: 'none', boxShadow: isDark ? '0 24px 48px rgba(0,0,0,0.5)' : '0 24px 48px rgba(0,0,0,0.1)' } },
       },
     },
   });
