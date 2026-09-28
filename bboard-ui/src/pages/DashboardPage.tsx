@@ -12,12 +12,12 @@ import ShareIcon from '@mui/icons-material/Share';
 import { QRCodeSVG } from 'qrcode.react';
 import { Stepper, Step, StepLabel, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 
-function getCompiledContract() {
+function getCompiledContract(state?: any) {
   const witnesses = {
-    auctioneer_secret: ({ privateState }: any) => [privateState, privateState.auctioneer_secret ?? new Uint8Array(32)],
-    bidder_secret: ({ privateState }: any) => [privateState, privateState.bidder_secret ?? new Uint8Array(32)],
-    bid_amount: ({ privateState }: any) => [privateState, privateState.bid_amount ?? 0n],
-    bid_nonce: ({ privateState }: any) => [privateState, privateState.bid_nonce ?? new Uint8Array(32)],
+    auctioneer_secret: ({ privateState }: any) => [privateState, state?.auctioneer_secret ?? new Uint8Array(32)],
+    bidder_secret: ({ privateState }: any) => [privateState, state?.bidder_secret ?? new Uint8Array(32)],
+    bid_amount: ({ privateState }: any) => [privateState, state?.bid_amount ?? 0n],
+    bid_nonce: ({ privateState }: any) => [privateState, state?.bid_nonce ?? new Uint8Array(32)],
   };
   return CompiledContract.make('auction', Contract).pipe(
     CompiledContract.withWitnesses(witnesses),
@@ -83,12 +83,6 @@ export const DashboardPage = () => {
     if (!session || !address) return;
     setActionStatus({ type: 'info', message: `Executing ${action}... Please approve in wallet.` });
     try {
-      if (session.networkId !== 'Preprod') {
-        throw new Error('Please switch your wallet network to Preprod and try again.');
-      }
-
-      const compiledContract = getCompiledContract();
-      
       const adminSk = getOrCreateSecret('admin', session.unshieldedAddress);
       const bidderSk = getOrCreateSecret('bidder', session.unshieldedAddress);
       const nonce = getOrCreateSecret(`nonce_${address}`, session.unshieldedAddress);
@@ -105,6 +99,7 @@ export const DashboardPage = () => {
         bid_nonce: nonce,
       };
 
+      const compiledContract = getCompiledContract(privateState);
       // If commitBid, we need to pass the commitment hash as an argument
       const args = [];
       if (action === 'commitBid') {
@@ -174,7 +169,7 @@ export const DashboardPage = () => {
       {contractLedger && (
         <Grid container spacing={4}>
           {/* Asset Visualization */}
-          <Grid xs={12} md={5}>
+          <Grid item xs={12} md={5}>
             <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', border: theme.palette.mode === 'dark' ? '1px solid rgba(204,255,0,0.1)' : '1px solid rgba(0,0,0,0.1)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ width: 150, height: 150, mb: 4, borderRadius: '20px', background: theme.palette.mode === 'dark' ? 'linear-gradient(135deg, rgba(204,255,0,0.2), rgba(77,166,255,0.2))' : 'linear-gradient(135deg, rgba(170,204,0,0.2), rgba(0,102,204,0.2))', border: `1px dashed ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.5)' : 'rgba(170,204,0,0.5)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Typography sx={{ color: theme.palette.primary.main, fontFamily: 'Instrument Serif', fontSize: '3rem' }}>?</Typography>
@@ -185,7 +180,7 @@ export const DashboardPage = () => {
           </Grid>
 
           {/* Bidding Controls */}
-          <Grid xs={12} md={7}>
+          <Grid item xs={12} md={7}>
             <Paper elevation={24} sx={{ p: 4, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,30,0.9)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', color: 'text.primary', height: '100%' }}>
               
               {/* Winner Podium */}
@@ -229,6 +224,23 @@ export const DashboardPage = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography color="text.secondary" fontFamily="Inter">Highest Bid:</Typography>
                   <Typography fontWeight="bold">{contractLedger.highest_bid.toString()} tokens</Typography>
+                </Box>
+                
+                <Box sx={{ borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, my: 1 }} />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography color="text.secondary" fontFamily="Inter">Commitments Received:</Typography>
+                  <Typography fontWeight="bold">{Number(contractLedger.bid_commitments?.size ?? 0)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography color="text.secondary" fontFamily="Inter">Bids Revealed:</Typography>
+                  <Typography fontWeight="bold">{Number((contractLedger as any).revealed_bids?.size ?? 0)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography color="text.secondary" fontFamily="Inter">Awaiting Revelation:</Typography>
+                  <Typography fontWeight="bold">
+                    {Number(contractLedger.bid_commitments?.size ?? 0) - Number((contractLedger as any).revealed_bids?.size ?? 0)}
+                  </Typography>
                 </Box>
               </Stack>
 

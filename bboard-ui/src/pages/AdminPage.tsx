@@ -11,12 +11,12 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { getOrCreateSecret } from '../utils/secrets';
 import { TextField } from '@mui/material';
 
-function getCompiledContract() {
+function getCompiledContract(state?: any) {
   const witnesses = {
-    auctioneer_secret: ({ privateState }: any) => [privateState, privateState.auctioneer_secret],
-    bidder_secret: ({ privateState }: any) => [privateState, privateState.bidder_secret],
-    bid_amount: ({ privateState }: any) => [privateState, privateState.bid_amount],
-    bid_nonce: ({ privateState }: any) => [privateState, privateState.bid_nonce],
+    auctioneer_secret: ({ privateState }: any) => [privateState, state?.auctioneer_secret ?? new Uint8Array(32)],
+    bidder_secret: ({ privateState }: any) => [privateState, state?.bidder_secret ?? new Uint8Array(32)],
+    bid_amount: ({ privateState }: any) => [privateState, state?.bid_amount ?? 0n],
+    bid_nonce: ({ privateState }: any) => [privateState, state?.bid_nonce ?? new Uint8Array(32)],
   };
   return CompiledContract.make('auction', Contract).pipe(
     CompiledContract.withWitnesses(witnesses),
@@ -39,14 +39,8 @@ export const AdminPage = () => {
     setStatus('deploying');
     setErrorMsg(null);
     try {
-      // Preflight network check
-      if (session.networkId !== 'Preprod') {
-        throw new Error('Please switch your wallet network to Preprod and try again.');
-      }
-
-      const compiledContract = getCompiledContract();
-
       const adminSk = getOrCreateSecret('admin', session.unshieldedAddress);
+      const compiledContract = getCompiledContract({ auctioneer_secret: adminSk });
       const adminHash = (pureCircuits as any).auctioneer_key(adminSk);
 
       const deployTxData = await createUnprovenDeployTx(session.providers as any, {
@@ -117,19 +111,20 @@ export const AdminPage = () => {
               size="large" 
               onClick={handleDeploy} 
               startIcon={<RocketLaunchIcon />}
-            sx={{ 
-              background: 'linear-gradient(90deg, #4da6ff, #0066cc)', 
-              color: 'white', 
-              px: 4, 
-              py: 1.5, 
-              borderRadius: 3,
-              fontWeight: 'bold',
-              textTransform: 'none',
-              fontSize: '1.1rem'
-            }}
-          >
-            Deploy to Preprod
-          </Button>
+              sx={{ 
+                background: 'linear-gradient(90deg, #4da6ff, #0066cc)', 
+                color: 'white', 
+                px: 4, 
+                py: 1.5, 
+                borderRadius: 3,
+                fontWeight: 'bold',
+                textTransform: 'none',
+                fontSize: '1.1rem'
+              }}
+            >
+              Deploy to Preprod
+            </Button>
+          </Box>
         )}
 
         {status === 'deploying' && (
