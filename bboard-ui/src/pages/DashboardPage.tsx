@@ -8,6 +8,9 @@ import { createUnprovenCallTx, submitTxAsync } from '@midnight-ntwrk/midnight-js
 import { sampleSigningKey } from '@midnight-ntwrk/compact-runtime';
 import { getOrCreateSecret, saveUserBid, getUserBid } from '../utils/secrets';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ShareIcon from '@mui/icons-material/Share';
+import { QRCodeSVG } from 'qrcode.react';
+import { Stepper, Step, StepLabel, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 
 function getCompiledContract() {
   const witnesses = {
@@ -35,6 +38,16 @@ export const DashboardPage = () => {
   const [bidAmount, setBidAmount] = useState('');
   const [localBid, setLocalBid] = useState<string | null>(null);
   const [actionStatus, setActionStatus] = useState<{ type: 'info' | 'success' | 'error', message: string } | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
+
+  // Metadata & Roles
+  const savedAuctions = JSON.parse(localStorage.getItem('RECENT_AUCTIONS') || '[]');
+  const myAuction = savedAuctions.find((a: any) => a.address === address);
+  
+  const displayTitle = searchParams.get('title') || myAuction?.name || 'Mystery Asset';
+  const displayDesc = searchParams.get('desc') || myAuction?.desc || 'A cryptographically sealed asset available for auction on Midnight.';
+  
+  const isAuctioneer = !!myAuction;
 
   const fetchState = useCallback(async () => {
     if (!session || !address) return;
@@ -137,7 +150,12 @@ export const DashboardPage = () => {
   return (
     <Box sx={{ maxWidth: '1200px', margin: '0 auto', p: { xs: 2, md: 4 } }}>
       <Paper elevation={24} sx={{ p: 4, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : '#fff', border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)', color: 'text.primary', mb: 4 }}>
-        <Typography variant="h5" fontWeight="bold" mb={2} fontFamily="Instrument Serif" fontStyle="italic">Connect to Auction</Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h5" fontWeight="bold" fontFamily="Instrument Serif" fontStyle="italic">Connect to Auction</Typography>
+          {address && (
+             <Button variant="outlined" size="small" startIcon={<ShareIcon />} onClick={() => setShareOpen(true)}>Share</Button>
+          )}
+        </Stack>
         <Stack direction="row" spacing={2}>
           <TextField 
             fullWidth 
@@ -161,8 +179,8 @@ export const DashboardPage = () => {
               <Box sx={{ width: 150, height: 150, mb: 4, borderRadius: '20px', background: theme.palette.mode === 'dark' ? 'linear-gradient(135deg, rgba(204,255,0,0.2), rgba(77,166,255,0.2))' : 'linear-gradient(135deg, rgba(170,204,0,0.2), rgba(0,102,204,0.2))', border: `1px dashed ${theme.palette.mode === 'dark' ? 'rgba(204,255,0,0.5)' : 'rgba(170,204,0,0.5)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Typography sx={{ color: theme.palette.primary.main, fontFamily: 'Instrument Serif', fontSize: '3rem' }}>?</Typography>
               </Box>
-              <Typography variant="h5" fontWeight="bold" color="text.primary" mb={1} fontFamily="Inter">Mystery Asset</Typography>
-              <Typography color="text.secondary" textAlign="center" fontFamily="Inter">A cryptographically sealed asset available for auction on Midnight.</Typography>
+              <Typography variant="h5" fontWeight="bold" color="text.primary" mb={1} fontFamily="Inter">{displayTitle}</Typography>
+              <Typography color="text.secondary" textAlign="center" fontFamily="Inter">{displayDesc}</Typography>
             </Paper>
           </Grid>
 
@@ -196,6 +214,12 @@ export const DashboardPage = () => {
                   }}
                 />
               </Stack>
+
+              <Stepper activeStep={Number(contractLedger.phase)} alternativeLabel sx={{ mb: 4, '& .MuiStepIcon-root.Mui-active': { color: theme.palette.primary.main }, '& .MuiStepIcon-root.Mui-completed': { color: theme.palette.primary.main } }}>
+                <Step><StepLabel sx={{ '& .MuiStepLabel-label': { fontFamily: 'Inter' } }}>Commit Phase</StepLabel></Step>
+                <Step><StepLabel sx={{ '& .MuiStepLabel-label': { fontFamily: 'Inter' } }}>Reveal Phase</StepLabel></Step>
+                <Step><StepLabel sx={{ '& .MuiStepLabel-label': { fontFamily: 'Inter' } }}>Resolved</StepLabel></Step>
+              </Stepper>
               
               <Stack spacing={2} mb={4} sx={{ p: 3, background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -259,24 +283,47 @@ export const DashboardPage = () => {
                   </Button>
                 )}
                 
-                <Box sx={{ borderTop: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', pt: 3, mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ width: '100%', fontFamily: 'Inter' }}>Auctioneer Controls (Admin Only):</Typography>
-                  {contractLedger.phase === 0n && (
-                    <Button variant="outlined" onClick={() => handleAction('advanceToReveal')} sx={{ borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', color: 'text.primary' }}>
-                      Close Bidding (Advance to Reveal)
-                    </Button>
-                  )}
-                  {contractLedger.phase === 1n && (
-                    <Button variant="contained" onClick={() => handleAction('resolveAuction')} sx={{ background: theme.palette.text.primary, color: theme.palette.background.default }}>
-                      Resolve Auction (End Round)
-                    </Button>
-                  )}
-                </Box>
+                {isAuctioneer && (
+                  <Box sx={{ borderTop: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)', pt: 3, mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ width: '100%', fontFamily: 'Inter' }}>Auctioneer Controls (Admin Only):</Typography>
+                    {contractLedger.phase === 0n && (
+                      <Button variant="outlined" onClick={() => handleAction('advanceToReveal')} sx={{ borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', color: 'text.primary' }}>
+                        Close Bidding (Advance to Reveal)
+                      </Button>
+                    )}
+                    {contractLedger.phase === 1n && (
+                      <Button variant="contained" onClick={() => handleAction('resolveAuction')} sx={{ background: theme.palette.text.primary, color: theme.palette.background.default }}>
+                        Resolve Auction (End Round)
+                      </Button>
+                    )}
+                  </Box>
+                )}
               </Stack>
             </Paper>
           </Grid>
         </Grid>
       )}
+
+      <Dialog open={shareOpen} onClose={() => setShareOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily: 'Inter', fontWeight: 'bold' }}>Share this Auction</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, py: 4 }}>
+          <Box sx={{ background: '#fff', p: 2, borderRadius: '16px' }}>
+            <QRCodeSVG value={`${window.location.origin}/dashboard?address=${address}&title=${encodeURIComponent(displayTitle)}&desc=${encodeURIComponent(displayDesc)}`} size={220} />
+          </Box>
+          <Typography variant="body2" color="text.secondary" textAlign="center" fontFamily="Inter">
+            Scan this QR code or copy the link below to share this exact auction with other bidders.
+          </Typography>
+          <Stack direction="row" spacing={1} width="100%">
+            <TextField 
+              fullWidth 
+              size="small"
+              value={`${window.location.origin}/dashboard?address=${address}&title=${encodeURIComponent(displayTitle)}&desc=${encodeURIComponent(displayDesc)}`} 
+              InputProps={{ readOnly: true, sx: { fontFamily: 'monospace', fontSize: '0.85rem' } }} 
+            />
+            <Button variant="contained" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/dashboard?address=${address}&title=${encodeURIComponent(displayTitle)}&desc=${encodeURIComponent(displayDesc)}`)} sx={{ background: theme.palette.primary.main, color: theme.palette.mode === 'dark' ? '#000' : '#fff' }}>Copy</Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

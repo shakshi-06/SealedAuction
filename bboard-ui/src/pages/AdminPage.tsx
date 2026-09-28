@@ -9,6 +9,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { getOrCreateSecret } from '../utils/secrets';
+import { TextField } from '@mui/material';
 
 function getCompiledContract() {
   const witnesses = {
@@ -30,6 +31,8 @@ export const AdminPage = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
 
   const handleDeploy = useCallback(async () => {
     if (!session || !isConnected) return;
@@ -64,14 +67,13 @@ export const AdminPage = () => {
       // Save to recent auctions for the Explorer feed
       try {
         const existing = JSON.parse(localStorage.getItem('RECENT_AUCTIONS') || '[]');
-        const items = ["Rare zkNFT #001", "Midnight Genesis Grant", "Zero-Knowledge Artifact", "Encrypted Data Cache"];
-        const randomItem = items[Math.floor(Math.random() * items.length)];
         existing.unshift({
           address: contractAddress,
-          name: randomItem,
+          name: title || "Zero-Knowledge Artifact",
+          desc: desc || "A cryptographically sealed asset available for auction on Midnight.",
           deployedAt: Date.now()
         });
-        localStorage.setItem('RECENT_AUCTIONS', JSON.stringify(existing.slice(0, 6))); // Keep last 6
+        localStorage.setItem('RECENT_AUCTIONS', JSON.stringify(existing.slice(0, 20))); // Keep last 20
       } catch (e) {}
 
       setStatus('deployed');
@@ -107,11 +109,14 @@ export const AdminPage = () => {
         </Typography>
 
         {(status === 'idle' || status === 'error') && (
-          <Button 
-            variant="contained" 
-            size="large" 
-            onClick={handleDeploy} 
-            startIcon={<RocketLaunchIcon />}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 4 }}>
+            <TextField label="Auction Title (Optional)" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth />
+            <TextField label="Description (Optional)" value={desc} onChange={(e) => setDesc(e.target.value)} multiline rows={3} fullWidth />
+            <Button 
+              variant="contained" 
+              size="large" 
+              onClick={handleDeploy} 
+              startIcon={<RocketLaunchIcon />}
             sx={{ 
               background: 'linear-gradient(90deg, #4da6ff, #0066cc)', 
               color: 'white', 
@@ -154,14 +159,23 @@ export const AdminPage = () => {
                 </IconButton>
               </Tooltip>
             </Stack>
-            <Button 
-              href={`https://preprod.midnightexplorer.com/contracts/${deployedAddress}`} 
-              target="_blank" 
-              endIcon={<OpenInNewIcon />}
-              sx={{ mt: 3, color: '#4da6ff' }}
-            >
-              View on Midnight Explorer
-            </Button>
+            <Stack direction="row" spacing={2} mt={3}>
+              <Button 
+                variant="contained"
+                href={`/dashboard?address=${deployedAddress}&title=${encodeURIComponent(title || "Zero-Knowledge Artifact")}&desc=${encodeURIComponent(desc || "A cryptographically sealed asset available for auction on Midnight.")}`}
+                sx={{ background: '#4da6ff', color: '#000', fontWeight: 'bold' }}
+              >
+                Go to Dashboard
+              </Button>
+              <Button 
+                href={`https://preprod.midnightexplorer.com/contracts/${deployedAddress}`} 
+                target="_blank" 
+                endIcon={<OpenInNewIcon />}
+                sx={{ color: '#4da6ff' }}
+              >
+                View Explorer
+              </Button>
+            </Stack>
           </Box>
         )}
 

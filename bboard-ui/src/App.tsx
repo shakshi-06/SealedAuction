@@ -318,7 +318,7 @@ const Home: React.FC = () => {
       <Box sx={{ width: '100%', mt: 8, pt: 8, borderTop: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
           <Typography variant="h3" sx={{ color: 'text.primary', fontFamily: 'Instrument Serif', fontStyle: 'italic' }}>
-            Live Network Auctions
+            Saved & Deployed Auctions History
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: theme.palette.primary.main, boxShadow: `0 0 10px ${theme.palette.primary.main}` }} />
@@ -330,7 +330,7 @@ const Home: React.FC = () => {
           {recentAuctions.map((auction, i) => (
             <Grid item xs={12} md={4} key={i} sx={{ display: 'flex' }}>
               <Paper 
-                onClick={() => auction.address !== '0x...' && navigate(`/dashboard?address=${auction.address}`)}
+                onClick={() => auction.address !== '0x...' && navigate(`/dashboard?address=${auction.address}&title=${encodeURIComponent(auction.name || '')}&desc=${encodeURIComponent(auction.desc || '')}`)}
                 sx={{ 
                   p: 3, 
                   width: '100%',
