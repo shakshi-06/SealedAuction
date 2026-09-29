@@ -1,7 +1,7 @@
 # MIDNIGHT NETWORK — MASTER DEVELOPMENT GUIDE
 ## Source-of-Truth for Building Hackathon-Ready dApps (Levels 1–4)
 
-> **Author:** Deep Saha (DeepSaha25) — learned from ScholarShield codebase
+> **Author:** Shakshi Kotwala — learned from Midnight codebase
 > **Version:** 1.0 — September 2026
 > **Purpose:** Give this file to an AI Agent as the single source of truth. The agent can build a complete Level 1–4 Midnight dApp from scratch by following this guide alone.
 
@@ -1838,6 +1838,6 @@ out_*.log
 
 ---
 
-*Guide authored by Deep Saha (DeepSaha25) | ScholarShield project, September 2026*
+*Guide maintained for SealedAuction | September 2026*
 *Source files studied: scholarship.compact, midnight.ts, WalletContext.tsx, AdminPage.tsx,*
 *config.ts, providers.ts, scholarship.test.ts, compose.yml, ci.yaml, package.json, vite.config.ts*
