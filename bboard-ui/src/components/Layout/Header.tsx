@@ -1,11 +1,13 @@
 import React from 'react';
-import { AppBar, Box, Button, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import { AppBar, Box, Button, Container, IconButton, Stack, Typography, useTheme } from '@mui/material';
 import { useWallet, useAppTheme } from '../../contexts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ArrowOutwardRoundedIcon from '@mui/icons-material/ArrowOutwardRounded';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+
+import { SealedBidLogo } from '../SealedBidLogo';
 
 export const Header: React.FC = () => {
   const { connect, disconnect, isConnected, isConnecting, address } = useWallet();
@@ -30,10 +32,10 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <AppBar position="sticky" elevation={0} sx={{ background: isDark ? 'rgba(11,11,11,0.88)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${divider}`, zIndex: 1100 }}>
-      <Box sx={{ width: 'min(1380px, calc(100% - 40px))', mx: 'auto', py: 1.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
+    <AppBar position="sticky" elevation={0} sx={{ background: isDark ? 'rgba(11,11,11,0.88)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', zIndex: 1100 }}>
+      <Container maxWidth="lg" sx={{ py: 1.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
         <Box onClick={() => navigate('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer', minWidth: 160 }}>
-          <Box component="img" src="/sealedbid-logo.png" alt="SealedBid logo" sx={{ width: 42, height: 42, objectFit: 'contain', borderRadius: 1.5, background: '#fff' }} />
+          <SealedBidLogo size={36} color={redMain} />
           <Box>
             <Typography sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 800, letterSpacing: '-0.04em', fontSize: 17, lineHeight: 1, color: paperText }}>SealedBid</Typography>
             <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 9, color: mutedText, letterSpacing: '0.14em', mt: 0.5 }}>PRIVATE MARKET</Typography>
@@ -72,7 +74,7 @@ export const Header: React.FC = () => {
           )}
           <ArrowOutwardRoundedIcon sx={{ display: { xs: 'none', sm: 'block' }, color: mutedText, fontSize: 18 }} />
         </Box>
-      </Box>
+      </Container>
     </AppBar>
   );
 };
