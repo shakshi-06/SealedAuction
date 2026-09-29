@@ -18,7 +18,7 @@ export const PrivacyPage: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: { xs: 8, md: 12 }, mb: 12 }}>
-      <Typography variant="h2" sx={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', mb: 4, color: paperText }}>
+      <Typography variant="h2" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 800, mb: 4, color: paperText }}>
         How Midnight Keeps Your Bid Secret
       </Typography>
 

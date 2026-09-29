@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap');
 
 html,
 body,
@@ -9,6 +9,11 @@ body,
 }
 
 html { scroll-behavior: smooth; }
+
+body {
+  font-feature-settings: 'cv11' 1, 'ss01' 1;
+  text-rendering: optimizeLegibility;
+}
 
 @keyframes revealUp {
   from { opacity: 0; transform: translateY(18px); }

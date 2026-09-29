@@ -61,11 +61,16 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ borderBottom: `1px solid ${divider}`, overflow: 'hidden', whiteSpace: 'nowrap', background: isDark ? '#111010' : '#FFFFFF' }}>
-        <Box sx={{ display: 'inline-flex', minWidth: '200%', animation: 'marquee 32s linear infinite', py: 1.2 }}>
+      <Box className="status-ticker" sx={{ borderBottom: `1px solid ${divider}`, overflow: 'hidden', whiteSpace: 'nowrap', background: isDark ? '#201817' : '#FFFDFC', position: 'relative', '&::before, &::after': { content: '""', position: 'absolute', top: 0, bottom: 0, width: 72, zIndex: 2, pointerEvents: 'none' }, '&::before': { left: 0, background: `linear-gradient(90deg, ${isDark ? '#201817' : '#FFFDFC'}, transparent)` }, '&::after': { right: 0, background: `linear-gradient(270deg, ${isDark ? '#201817' : '#FFFDFC'}, transparent)` } }}>
+        <Box className="status-ticker__track" sx={{ display: 'inline-flex', minWidth: '200%', animation: 'marquee 34s linear infinite', py: 1.45, '&:hover': { animationPlayState: 'paused' } }}>
           {[0, 1, 2, 3].map((item) => (
-            <Typography key={item} sx={{ px: 5, color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em' }}>
-              MIDNIGHT PREPROD <span style={{ color: redMain }}>●</span> COMMIT REVEAL RESOLVE <span style={{ color: mutedText }}>/</span> PRIVATE BY DESIGN
+            <Typography key={item} component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 2.3, px: 4.5, color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10, fontWeight: 500, letterSpacing: '0.12em' }}>
+              <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', background: redMain, boxShadow: `0 0 0 4px ${isDark ? 'rgba(217,74,66,0.12)' : 'rgba(217,74,66,0.10)'}` }} />
+              <Box component="span" sx={{ color: paperText }}>MIDNIGHT PREPROD</Box>
+              <Box component="span" sx={{ opacity: 0.55 }}>/</Box>
+              COMMIT <Box component="span" sx={{ color: redMain }}>→</Box> REVEAL <Box component="span" sx={{ color: redMain }}>→</Box> RESOLVE
+              <Box component="span" sx={{ opacity: 0.55 }}>/</Box>
+              PRIVATE BY DESIGN
             </Typography>
           ))}
         </Box>
@@ -79,10 +84,10 @@ const Home: React.FC = () => {
                 <Box sx={{ width: 8, height: 8, background: redMain }} />
                 <Typography sx={{ color: redSoft, fontFamily: '"DM Mono", monospace', fontSize: 11, letterSpacing: '0.13em' }}>SEALED-BID AUCTIONS</Typography>
               </Stack>
-              <Typography component="h1" sx={{ maxWidth: 770, fontSize: { xs: '3.5rem', sm: '5rem', md: '6.8rem' }, lineHeight: 0.94, color: paperText }}>
+              <Typography component="h1" sx={{ maxWidth: 770, fontSize: { xs: '2.8rem', sm: '4rem', md: '5.2rem' }, lineHeight: 0.98, color: paperText }}>
                 The price stays <Box component="span" sx={{ color: redSoft }}>private.</Box>
                 <br />
-                The result stays <Box component="span" sx={{ fontStyle: 'italic', fontWeight: 500 }}>provable.</Box>
+                The result stays <Box component="span" sx={{ fontWeight: 800 }}>provable.</Box>
               </Typography>
               <Typography sx={{ maxWidth: 570, color: mutedText, fontSize: { xs: 17, md: 20 }, lineHeight: 1.6 }}>
                 A confidential auction room built on Midnight. Commit your offer without showing your strategy, then prove the bid is authentic when the room opens.
@@ -113,13 +118,10 @@ const Home: React.FC = () => {
                   </Box>
                   <Chip label="COMMIT OPEN" size="small" sx={{ color: redSoft, border: `1px solid ${redMain}`, background: 'rgba(179,38,45,0.1)' }} />
                 </Stack>
-                <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 230, position: 'relative' }}>
-                  <Box sx={{ width: 190, height: 190, border: `1px solid ${isDark ? '#403B38' : '#C0BBB8'}`, transform: 'rotate(45deg)', animation: 'slowFloat 6s ease-in-out infinite', display: 'grid', placeItems: 'center' }}>
-                    <Box sx={{ width: 122, height: 122, border: `1px solid ${redMain}`, display: 'grid', placeItems: 'center', transform: 'rotate(-45deg)', background: 'rgba(179,38,45,0.06)' }}>
-                      <LockOutlinedIcon sx={{ color: redSoft, fontSize: 30 }} />
-                    </Box>
-                  </Box>
-                  <Typography sx={{ position: 'absolute', bottom: 0, color: mutedText, fontFamily: '"DM Mono", monospace', fontSize: 10 }}>YOUR OFFER IS SEALED</Typography>
+                <Box sx={{ display: 'grid', placeItems: 'center', minHeight: 230, position: 'relative', px: 2 }}>
+                  <Typography sx={{ maxWidth: 330, textAlign: 'center', color: paperText, fontSize: { xs: 30, md: 38 }, lineHeight: 1.04, letterSpacing: '-0.055em', fontWeight: 800 }}>
+                    The price stays <Box component="span" sx={{ color: redSoft }}>private.</Box><br />The result stays <Box component="span" sx={{ color: redSoft }}>provable.</Box>
+                  </Typography>
                 </Box>
                 <Box sx={{ borderTop: `1px solid ${divider}`, pt: 2 }}>
                   <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}><Typography sx={{ color: mutedText, fontSize: 12 }}>Commitment status</Typography><Typography sx={{ color: redSoft, fontFamily: '"DM Mono", monospace', fontSize: 11 }}>WAITING FOR REVEAL</Typography></Stack>

@@ -170,7 +170,7 @@ export const AuctionCard: React.FC<Readonly<AuctionCardProps>> = ({ boardDeploym
                     size="small"
                     data-testid="auction-phase-chip"
                     sx={{
-                      fontFamily: '"Space Grotesk", sans-serif',
+                      fontFamily: '"Inter", sans-serif',
                       fontWeight: 600,
                       fontSize: '0.7rem',
                       backgroundColor: phase === Phase.REVEAL ? 'rgba(232,51,43,0.16)' : '#1A1A1A',

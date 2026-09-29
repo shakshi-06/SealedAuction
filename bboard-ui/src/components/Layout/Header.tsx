@@ -33,11 +33,9 @@ export const Header: React.FC = () => {
     <AppBar position="sticky" elevation={0} sx={{ background: isDark ? 'rgba(11,11,11,0.88)' : 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${divider}`, zIndex: 1100 }}>
       <Box sx={{ width: 'min(1380px, calc(100% - 40px))', mx: 'auto', py: 1.8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 }}>
         <Box onClick={() => navigate('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer', minWidth: 160 }}>
-          <Box sx={{ width: 34, height: 34, display: 'grid', placeItems: 'center', border: `1px solid ${redMain}`, color: paperText, position: 'relative', '&::after': { content: '""', position: 'absolute', width: 8, height: 8, background: redMain, right: -4, bottom: -4 } }}>
-            <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 13, fontWeight: 500 }}>SA</Typography>
-          </Box>
+          <Box component="img" src="/sealedbid-logo.png" alt="SealedBid logo" sx={{ width: 42, height: 42, objectFit: 'contain', borderRadius: 1.5, background: '#fff' }} />
           <Box>
-            <Typography sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.03em', fontSize: 17, lineHeight: 1, color: paperText }}>SealedBid</Typography>
+            <Typography sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 800, letterSpacing: '-0.04em', fontSize: 17, lineHeight: 1, color: paperText }}>SealedBid</Typography>
             <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 9, color: mutedText, letterSpacing: '0.14em', mt: 0.5 }}>PRIVATE MARKET</Typography>
           </Box>
         </Box>
