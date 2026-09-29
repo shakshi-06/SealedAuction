@@ -49,7 +49,18 @@ export type Circuits<PS> = {
 export type Ledger = {
   readonly phase: bigint;
   readonly auctioneer: Uint8Array;
-  readonly bid_commitment: Uint8Array;
+  bid_commitments: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(elem_0: Uint8Array): boolean;
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
+  revealed_bids: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(elem_0: Uint8Array): boolean;
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
   readonly highest_bid: bigint;
   readonly round: bigint;
   nullifiers: {
