@@ -2,6 +2,9 @@ node_modules/
 dist/
 .env.preprod
 .env.preview
+.env.local
+.env*.local
+__agent__/
 *.log
 midnight-level-db/
 compactc_linux/
