@@ -143,7 +143,7 @@ export const DashboardPage: React.FC = () => {
   if (!isConnected) return <Container maxWidth="sm" sx={{ py: 14 }}><Surface sx={{ p: { xs: 3, md: 5 }, textAlign: 'center' }}><LockOutlinedIcon sx={{ color: redMain, fontSize: 32, mb: 2 }} /><Typography variant="h4" sx={{ color: paperText, mb: 1 }}>Enter the auction room</Typography><Typography sx={{ color: mutedText, lineHeight: 1.7, mb: 3 }}>Connect a Midnight wallet to sync the room state and participate in a sealed auction.</Typography><Button variant="contained" onClick={() => connect()} endIcon={<OpenInNewRoundedIcon />}>Connect wallet</Button></Surface></Container>;
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 9 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'end' }} spacing={3} sx={{ mb: 5 }}>
         <Box><Typography sx={{ color: redMain, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>AUCTION ROOM / PRIVATE ACCESS</Typography><Typography variant="h2" sx={{ color: paperText, fontSize: { xs: 42, md: 60 } }}>Participate without broadcasting.</Typography><Typography sx={{ color: mutedText, mt: 1, maxWidth: 590, lineHeight: 1.7 }}>The room state is public. Your sealed offer is not. Keep this tab available through the reveal phase.</Typography></Box>
         <Stack direction="row" spacing={1}><Button variant="outlined" startIcon={<ShareOutlinedIcon />} onClick={() => setShareOpen(true)} disabled={!address}>Share room</Button><Button variant="outlined" onClick={() => void fetchState()} disabled={loadingState}>{loadingState ? <CircularProgress size={18} /> : 'Sync state'}</Button></Stack>

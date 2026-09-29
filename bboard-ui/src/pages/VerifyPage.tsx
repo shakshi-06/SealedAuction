@@ -28,7 +28,7 @@ export const VerifyPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: { xs: 8, md: 12 }, mb: 12 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
       <Typography variant="h2" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 800, mb: 2, color: paperText }}>
         Manual Proof Verification
       </Typography>
