@@ -94,6 +94,11 @@ export const AdminPage: React.FC = () => {
 
       setDeployedAddress(contractAddress);
       localStorage.setItem('DEPLOYED_CONTRACT_ADDRESS', contractAddress);
+      try {
+        const myRooms = JSON.parse(localStorage.getItem('MY_CREATED_ROOMS') || '[]');
+        myRooms.unshift(contractAddress);
+        localStorage.setItem('MY_CREATED_ROOMS', JSON.stringify(myRooms));
+      } catch (_e) {}
 
       try {
         const existing = JSON.parse(localStorage.getItem('RECENT_AUCTIONS') || '[]');
