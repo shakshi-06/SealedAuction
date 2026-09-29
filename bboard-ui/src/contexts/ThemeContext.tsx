@@ -7,12 +7,12 @@ type ThemeContextType = {
   toggleTheme: () => void;
 };
 
-const ThemeContext = createContext<ThemeContextType>({ mode: 'dark', toggleTheme: () => undefined });
+const ThemeContext = createContext<ThemeContextType>({ mode: 'light', toggleTheme: () => undefined });
 
 export const useAppTheme = () => useContext(ThemeContext);
 
 export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [mode, setMode] = useState<'light' | 'dark'>('dark');
+  const [mode, setMode] = useState<'light' | 'dark'>('light');
   
   useEffect(() => {
     const saved = localStorage.getItem('theme_mode');

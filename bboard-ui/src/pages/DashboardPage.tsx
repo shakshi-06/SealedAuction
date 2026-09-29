@@ -33,7 +33,7 @@ const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown> }
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   return (
-    <Paper elevation={0} sx={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, boxShadow: isDark ? 'none' : '0 4px 24px rgba(0,0,0,0.04)', ...sx }}>
+    <Paper elevation={0} sx={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 3, boxShadow: isDark ? 'none' : '0 12px 30px rgba(91, 52, 40, 0.07)', ...sx }}>
       {children}
     </Paper>
   );

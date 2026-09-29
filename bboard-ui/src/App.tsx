@@ -18,7 +18,7 @@ const Surface: React.FC<React.PropsWithChildren<{ sx?: Record<string, unknown>; 
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   return (
-    <Paper className={className} onClick={onClick} elevation={0} sx={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, boxShadow: isDark ? 'none' : '0 4px 24px rgba(0,0,0,0.04)', ...sx }}>
+    <Paper className={className} onClick={onClick} elevation={0} sx={{ background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 3, boxShadow: isDark ? 'none' : '0 12px 30px rgba(91, 52, 40, 0.07)', ...sx }}>
       {children}
     </Paper>
   );
@@ -136,7 +136,7 @@ const Home: React.FC = () => {
               <Typography sx={{ color: redMain, fontFamily: '"DM Mono", monospace', fontSize: 10, letterSpacing: '0.14em', mb: 1 }}>WHY THIS EXISTS</Typography>
               <Typography variant="h3" sx={{ color: paperText, maxWidth: 620 }}>A fairer room for high-signal decisions.</Typography>
             </Box>
-            <Typography sx={{ color: mutedText, maxWidth: 390, lineHeight: 1.7, alignSelf: 'end' }}>Traditional auctions reveal too much, too early. SealedAuction creates a deliberate gap between making an offer and revealing it.</Typography>
+            <Typography sx={{ color: mutedText, maxWidth: 390, lineHeight: 1.7, alignSelf: 'end' }}>Traditional auctions reveal too much, too early. SealedBid creates a deliberate gap between making an offer and revealing it.</Typography>
           </Stack>
           <Grid container spacing={2}>
             {[

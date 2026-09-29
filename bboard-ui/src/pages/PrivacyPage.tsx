@@ -28,7 +28,7 @@ export const PrivacyPage: React.FC = () => {
         </Typography>
         <Typography sx={{ fontFamily: 'Inter', color: mutedText, lineHeight: 1.8 }}>
           Unlike traditional blockchains (like Ethereum) where all data is public, the Midnight Network utilizes Zero-Knowledge Succinct Non-Interactive Arguments of Knowledge (ZK-SNARKs). 
-          When you place a bid on SealedAuction, your plaintext bid amount never leaves your device. Instead, a mathematically sound 'commitment' is derived locally on your machine and broadcasted.
+          When you place a bid on SealedBid, your plaintext bid amount never leaves your device. Instead, a mathematically sound 'commitment' is derived locally on your machine and broadcasted.
         </Typography>
       </Paper>
 

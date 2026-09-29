@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
             <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 13, fontWeight: 500 }}>SA</Typography>
           </Box>
           <Box>
-            <Typography sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.03em', fontSize: 17, lineHeight: 1, color: paperText }}>SealedAuction</Typography>
+            <Typography sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.03em', fontSize: 17, lineHeight: 1, color: paperText }}>SealedBid</Typography>
             <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 9, color: mutedText, letterSpacing: '0.14em', mt: 0.5 }}>PRIVATE MARKET</Typography>
           </Box>
         </Box>
