@@ -32,9 +32,7 @@ This Code of Conduct applies within all SealedAuction project spaces, and it als
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior should be reported privately to the SealedAuction maintainer, Shakshi Kotwala ([@shakshi-06](https://github.com/shakshi-06)). A dedicated private reporting contact has not yet been published; please do not post sensitive incident details in public issues or pull requests.
-
-<!-- Maintainer: add a private reporting email or another confidential contact channel before opening community participation. -->
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported privately to the SealedAuction maintainer, Shakshi Kotwala ([@shakshi-06](https://github.com/shakshi-06)), at [shakshikotwala20100309@gmail.com](mailto:shakshikotwala20100309@gmail.com). Please do not post sensitive incident details in public issues or pull requests.
 
 All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of an incident. Further details of specific enforcement policies may be posted separately.
 

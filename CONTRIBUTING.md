@@ -94,7 +94,9 @@ For files owned by the project author, use **Shakshi Kotwala** as the copyright 
 
 ## Support and Communication:
 
-For SealedAuction questions, use the [issue tracker](https://github.com/shakshi-06/SealedAuction/issues) or the relevant pull request. The project maintainer is **Shakshi Kotwala**, [@shakshi-06](https://github.com/shakshi-06).
+For SealedAuction questions, use the [issue tracker](https://github.com/shakshi-06/SealedAuction/issues) or the relevant pull request. The project maintainer is **Shakshi Kotwala**, [@shakshi-06](https://github.com/shakshi-06). Follow project updates on [X (@ShakshiKotwala)](https://x.com/ShakshiKotwala).
+
+For confidential Code of Conduct reports, email [shakshikotwala20100309@gmail.com](mailto:shakshikotwala20100309@gmail.com) and follow the [Code of Conduct](CODE_OF_CONDUCT.md#enforcement). Do not publish sensitive reports in the issue tracker.
 
 For general Midnight platform questions, consult the [developer documentation](https://docs.midnight.network/) or the wider Midnight community on [Discord](https://discord.com/invite/midnightnetwork), [Telegram](https://t.me/Midnight_Network_Official), and [X](https://x.com/MidnightNtwrk). These are platform community channels, not SealedAuction's private reporting contacts.
 

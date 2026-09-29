@@ -9,6 +9,7 @@
 [![CI](https://github.com/shakshi-06/SealedAuction/actions/workflows/ci.yaml/badge.svg)](https://github.com/shakshi-06/SealedAuction/actions/workflows/ci.yaml)
 [![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/shakshi-06/SealedAuction&root=bboard-ui)
 [![GitHub](https://img.shields.io/badge/GitHub-shakshi--06-181717?style=for-the-badge&logo=github)](https://github.com/shakshi-06)
+[![X (Twitter) Follow](https://img.shields.io/twitter/follow/ShakshiKotwala?style=for-the-badge)](https://x.com/ShakshiKotwala)
 [![License](https://img.shields.io/badge/License-Apache--2.0-blue?style=for-the-badge)](LICENSE)
 
 ---
@@ -42,12 +43,12 @@ The application combines a React interface, wallet-based transaction proving and
 
 - **Live Application (Vercel):** [https://sealedbid-app.vercel.app/](https://sealedbid-app.vercel.app/)
 - **Source Repository:** [shakshi-06/SealedAuction](https://github.com/shakshi-06/SealedAuction)
-- **Deployed Contract (Midnight Preprod):** <!-- Add the verified full contract address and explorer link. -->
+- **Deployed Contract (Midnight Preprod):** [`085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82`](https://preprod.midnightexplorer.com/contracts/085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82)
 - **Demo Video Presentation:** <!-- Add the demo video link here. -->
 - **Public Brand Presence (GitHub):** [@shakshi-06](https://github.com/shakshi-06)
-- **Public Brand Presence (X Profile):** <!-- Add your X profile if applicable. -->
+- **Public Brand Presence (X Profile):** [@ShakshiKotwala](https://x.com/ShakshiKotwala)
 
-> The UI includes an illustrative fallback contract address. It is not listed here as a verified deployment. Use the complete address returned by a successful deployment for the submission explorer link.
+> The Preprod explorer lists this exact contract address as deployed and displays a `resolveAuction` entry point. This confirms on-chain presence, not an independent audit or byte-for-byte verification against the repository's source. Use this full address when opening an auction room; the UI's illustrative fallback is not this deployment address.
 
 ---
 
@@ -193,7 +194,7 @@ The following maps the repository's implementation to the Midnight builder journ
 ### Level 2: Frontend Integration
 - **Objective:** Build the interface and connect a Midnight browser wallet.
 - **Implementation:** React routes, wallet context, proving/submission adapters, auction creation, and auction-room actions are present.
-- **Deployed Contract Address (Preprod):** <!-- Add the verified full contract address and explorer link. -->
+- **Deployed Contract Address (Preprod):** [`085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82`](https://preprod.midnightexplorer.com/contracts/085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82)
 
 ### Level 3: Production-Grade dApp
 - **Objective:** Add automated tests, CI, and a polished interface.
@@ -203,10 +204,10 @@ The following maps the repository's implementation to the Midnight builder journ
 ### Level 4: MVP Goes Live
 - **Objective:** Publish the frontend, document the project, and prepare submission evidence.
 - **Live Application:** [https://sealedbid-app.vercel.app/](https://sealedbid-app.vercel.app/)
-- **Deployed Contract (Preprod):** <!-- Add the verified full contract address and explorer link. -->
+- **Deployed Contract (Preprod):** [`085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82`](https://preprod.midnightexplorer.com/contracts/085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82)
 - **Demo Video Presentation:** <!-- Add the demo video link here. -->
 - **Public Brand Presence:** [@shakshi-06 on GitHub](https://github.com/shakshi-06)
-- **X Profile:** <!-- Add your X profile if applicable. -->
+- **X Profile:** [@ShakshiKotwala](https://x.com/ShakshiKotwala)
 - **Submission Evidence:** Screenshot and video slots below are intentionally empty until recording is complete.
 
 ---
@@ -331,6 +332,8 @@ The frontend lives in `bboard-ui/` and its production output is `bboard-ui/dist/
 **SealedAuction / SealedBid** is developed by **Shakshi Kotwala**.
 
 - **GitHub:** [@shakshi-06](https://github.com/shakshi-06)
+- **X (Twitter):** [@ShakshiKotwala](https://x.com/ShakshiKotwala)
+- **Reporting Email:** [shakshikotwala20100309@gmail.com](mailto:shakshikotwala20100309@gmail.com)
 - **Project Repository:** [SealedAuction](https://github.com/shakshi-06/SealedAuction)
 - **Live Application:** [sealedbid-app.vercel.app](https://sealedbid-app.vercel.app/)
 
