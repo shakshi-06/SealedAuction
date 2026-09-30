@@ -52,8 +52,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (!wallet) throw new Error('No Midnight wallet found. Install 1AM extension.');
       const api = await wallet.connect(network);
       const sess = await createConnectedSession(api);
+      const rawAddr = sess.unshieldedAddress;
+      const cleanAddr = typeof rawAddr === 'string' ? rawAddr : rawAddr ? String(rawAddr) : null;
       setSession(sess);
-      setAddress(sess.unshieldedAddress);
+      setAddress(cleanAddr);
       setIsConnected(true);
       return sess;
     } catch (e: any) {

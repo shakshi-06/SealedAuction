@@ -7,7 +7,10 @@ import type { BBoardProviders } from '../api/src/index.js';
 
 export function buildProviders(wallet: any, zkConfigPath: string, config: NetworkConfig): BBoardProviders {
   return {
-    privateStateProvider: levelPrivateStateProvider({ db: 'midnight-auction-level-db' }),
+    privateStateProvider: levelPrivateStateProvider({
+      db: 'midnight-auction-level-db',
+      privateStoragePasswordProvider: async () => 'secret-password-16chars-minimum',
+    }),
     publicDataProvider: indexerPublicDataProvider(config.indexer, config.indexerWS),
     zkConfigProvider: new NodeZkConfigProvider(zkConfigPath),
     proofProvider: httpClientProofProvider(config.proofServer),

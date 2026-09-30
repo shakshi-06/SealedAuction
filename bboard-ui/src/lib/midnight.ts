@@ -111,9 +111,11 @@ export async function createConnectedSession(api: any): Promise<ConnectedSession
     },
   };
 
+  const shieldedObj = Array.isArray(shieldedAddress) ? shieldedAddress[0] : shieldedAddress;
+
   const walletProvider: WalletProvider = {
-    getCoinPublicKey: () => shieldedAddress.shieldedCoinPublicKey,
-    getEncryptionPublicKey: () => shieldedAddress.shieldedEncryptionPublicKey,
+    getCoinPublicKey: () => shieldedObj?.shieldedCoinPublicKey || shieldedObj?.coinPublicKey || '',
+    getEncryptionPublicKey: () => shieldedObj?.shieldedEncryptionPublicKey || shieldedObj?.encryptionPublicKey || '',
     balanceTx: async (tx: any) => {
       const txHex = toHex(tx.serialize());
       const balanced = await api.balanceUnsealedTransaction(txHex);
@@ -133,6 +135,11 @@ export async function createConnectedSession(api: any): Promise<ConnectedSession
     },
   };
 
+  const resolvedAddress =
+    typeof unshieldedAddr === 'string'
+      ? unshieldedAddr
+      : unshieldedAddr?.unshieldedAddress || unshieldedAddr?.address || '';
+
   return {
     api, config,
     providers: {
@@ -143,7 +150,7 @@ export async function createConnectedSession(api: any): Promise<ConnectedSession
       walletProvider,
       midnightProvider,
     },
-    unshieldedAddress: unshieldedAddr.unshieldedAddress,
+    unshieldedAddress: resolvedAddress,
   };
 }
 

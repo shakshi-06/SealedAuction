@@ -116,7 +116,34 @@ export const DashboardPage: React.FC = () => {
   const title = searchParams.get('title') || auction?.name || 'Zero-Knowledge Artifact';
   const description = searchParams.get('desc') || auction?.desc || 'A confidential sealed-bid room secured by Midnight.';
   const shareUrl = `${window.location.origin}/dashboard?address=${encodeURIComponent(address)}&title=${encodeURIComponent(title)}&desc=${encodeURIComponent(description)}`;
-  const phase = contractLedger ? Number(contractLedger.phase) : 0;
+  const phase = useMemo(() => {
+    if (!contractLedger) return 0;
+    try {
+      const p = Number(contractLedger.phase);
+      return isNaN(p) ? 0 : p;
+    } catch {
+      return 0;
+    }
+  }, [contractLedger]);
+
+  const roundStr = useMemo(() => {
+    if (!contractLedger) return '00';
+    try {
+      return contractLedger.round?.toString().padStart(2, '0') ?? '00';
+    } catch {
+      return '00';
+    }
+  }, [contractLedger]);
+
+  const highestBidStr = useMemo(() => {
+    if (!contractLedger) return '0';
+    try {
+      return contractLedger.highest_bid?.toString() ?? '0';
+    } catch {
+      return '0';
+    }
+  }, [contractLedger]);
+
   const currentPhase = phaseCopy[phase] || phaseCopy[0];
 
   // Determine if the current user is the room creator / admin
@@ -144,8 +171,11 @@ export const DashboardPage: React.FC = () => {
     if (!session || !address) return;
     void fetchState();
     const interval = window.setInterval(fetchState, 5000);
-    const savedBid = getUserBid(session.unshieldedAddress, address);
-    if (savedBid) setLocalBid(savedBid);
+    const walletAddress = typeof session.unshieldedAddress === 'string' ? session.unshieldedAddress : String(session.unshieldedAddress || '');
+    if (walletAddress && address) {
+      const savedBid = getUserBid(walletAddress, address);
+      if (savedBid) setLocalBid(savedBid);
+    }
     return () => window.clearInterval(interval);
   }, [session, address, fetchState]);
 
@@ -427,7 +457,7 @@ export const DashboardPage: React.FC = () => {
                     </Typography>
                   </Box>
                   <Typography sx={{ color: redSoft, fontFamily: '"DM Mono", monospace', fontSize: 11, fontWeight: 700 }}>
-                    ROUND {contractLedger.round.toString().padStart(2, '0')}
+                    ROUND {roundStr}
                   </Typography>
                 </Stack>
 
@@ -454,7 +484,7 @@ export const DashboardPage: React.FC = () => {
                 {/* Metrics Grid */}
                 <Grid container spacing={2} sx={{ mb: 4 }}>
                   <Grid item xs={6}>
-                    <Metric label="Highest Revealed Bid" value={contractLedger.highest_bid.toString()} suffix="TOK" />
+                    <Metric label="Highest Revealed Bid" value={highestBidStr} suffix="TOK" />
                   </Grid>
                   <Grid item xs={6}>
                     <Metric label="Your Sealed Local Bid" value={localBid ? `${localBid} TOK` : 'NONE'} suffix="" />
@@ -568,7 +598,7 @@ export const DashboardPage: React.FC = () => {
                       ROOM RESOLVED
                     </Typography>
                     <Typography sx={{ color: paperText, fontSize: 32, fontWeight: 800, mt: 0.5 }}>
-                      {contractLedger.highest_bid.toString()} TOK
+                      {highestBidStr} TOK
                     </Typography>
                     <Typography sx={{ color: mutedText, fontSize: 13, mt: 0.5 }}>
                       Final highest revealed winning bid recorded on the Midnight contract ledger.

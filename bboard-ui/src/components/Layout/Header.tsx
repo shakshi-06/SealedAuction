@@ -68,7 +68,9 @@ export const Header: React.FC = () => {
             </Button>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, border: `1px solid ${divider}`, borderRadius: 1.5, background: theme.palette.background.default, pl: 1.3, pr: 0.5, py: 0.5 }}>
-              <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: paperText }}>{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}</Typography>
+              <Typography sx={{ fontFamily: '"DM Mono", monospace', fontSize: 11, color: paperText }}>
+                {typeof address === 'string' && address.length > 10 ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
+              </Typography>
               <Button size="small" onClick={disconnect} sx={{ minWidth: 0, px: 1, color: redSoft }}>Exit</Button>
             </Box>
           )}

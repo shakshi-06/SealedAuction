@@ -7,7 +7,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
-import { MainLayout, AddressHash } from './components';
+import { MainLayout, AddressHash, ErrorBoundary } from './components';
 import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -353,15 +353,17 @@ const Home: React.FC = () => {
 
 const App: React.FC = () => (
   <BrowserRouter>
-    <MainLayout>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/verify" element={<VerifyPage />} />
-      </Routes>
-    </MainLayout>
+    <ErrorBoundary>
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/verify" element={<VerifyPage />} />
+        </Routes>
+      </MainLayout>
+    </ErrorBoundary>
   </BrowserRouter>
 );
 
