@@ -211,21 +211,24 @@ The following maps the repository's implementation to the Midnight builder journ
 
 ### CI/CD & Automated Verification Proofs
 
+![SealedBid Application Dashboard Overview](https://github.com/user-attachments/assets/df725b99-4542-4c51-81e8-fb6f0b3a6bef)
+
+### Yarn Test Proofs
+
 ![CI/CD Pipeline Build & Test Passing Status](https://github.com/user-attachments/assets/8e80a542-1bee-45f7-8452-ad554110c250)
+
+### Yarn Compile Proofs
+
+![Sealed-Bid Auction Room Interface](https://github.com/user-attachments/assets/c0c16d13-f46e-4f9c-808e-a93f149334b5)
+
+
 
 ### User Interface Showcase
 
-#### Full Application Dashboard & Hero Section
-![SealedBid Application Dashboard Overview](https://github.com/user-attachments/assets/df725b99-4542-4c51-81e8-fb6f0b3a6bef)
-
-#### Interactive Sealed Auction Room
-![Sealed-Bid Auction Room Interface](https://github.com/user-attachments/assets/c0c16d13-f46e-4f9c-808e-a93f149334b5)
-
-#### Interface Features Gallery
-
-![SealedBid home page and recent auctions](https://github.com/user-attachments/assets/33171447-c5d9-4588-8011-42c922048985)
 
 ![Interactive contract address reveal](https://github.com/user-attachments/assets/29f9e88c-239b-4e5b-b678-5183b9d080ef)
+
+![SealedBid home page and recent auctions](https://github.com/user-attachments/assets/33171447-c5d9-4588-8011-42c922048985)
 
 ![SealedBid auction room dashboard](https://github.com/user-attachments/assets/b0a282d7-a553-41d9-b26d-25f1238426b6)
 
