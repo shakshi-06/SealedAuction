@@ -172,21 +172,25 @@ export const DashboardPage: React.FC = () => {
     void fetchState();
     const interval = window.setInterval(fetchState, 5000);
     const walletAddress = typeof session.unshieldedAddress === 'string' ? session.unshieldedAddress : String(session.unshieldedAddress || '');
-    if (walletAddress && address) {
+    if (address) {
       const savedBid = getUserBid(walletAddress, address);
-      if (savedBid) setLocalBid(savedBid);
+      if (savedBid) {
+        setLocalBid(savedBid);
+        setBidAmount(savedBid);
+      }
     }
     return () => window.clearInterval(interval);
   }, [session, address, fetchState]);
 
   const downloadBackup = () => {
-    if (!localBid || !session) return;
+    const activeBid = localBid || bidAmount;
+    if (!activeBid || !session) return;
     const adminSk = getOrCreateSecret('admin', session.unshieldedAddress);
     const bidderSk = getOrCreateSecret('bidder', session.unshieldedAddress);
     const nonce = getOrCreateSecret(`nonce_${address}`, session.unshieldedAddress);
     const backup = {
       address,
-      bidAmount: localBid,
+      bidAmount: activeBid,
       secrets: {
         adminSk: Array.from(adminSk),
         bidderSk: Array.from(bidderSk),
@@ -230,8 +234,8 @@ export const DashboardPage: React.FC = () => {
       const bidderSk = getOrCreateSecret('bidder', walletAddress);
       const nonce = getOrCreateSecret(`nonce_${address}`, walletAddress);
 
-      // Explicitly pull stored localBid if in reveal phase
-      const targetAmount = action === 'revealBid' ? (localBid || bidAmount) : bidAmount;
+      // Explicitly pull stored localBid or bidAmount
+      const targetAmount = bidAmount || localBid;
       const amount = BigInt(targetAmount || 0);
 
       const privateState = {
@@ -255,9 +259,10 @@ export const DashboardPage: React.FC = () => {
 
       await submitTxAsync(session.providers as any, { unprovenTx: txData.private.unprovenTx });
 
-      if (action === 'commitBid' && bidAmount) {
-        saveUserBid(walletAddress, address, bidAmount);
-        setLocalBid(bidAmount);
+      if ((action === 'commitBid' || action === 'revealBid') && targetAmount) {
+        saveUserBid(walletAddress, address, targetAmount);
+        setLocalBid(targetAmount);
+        setBidAmount(targetAmount);
       }
 
       setActionStatus({ type: 'success', message: `${labels[action]} complete. The room is updating.` });
@@ -563,21 +568,37 @@ export const DashboardPage: React.FC = () => {
                     <Typography sx={{ color: paperText, fontSize: 18, fontWeight: 700, mb: 0.8 }}>
                       Reveal your bid
                     </Typography>
-                    <Typography sx={{ color: mutedText, fontSize: 13, lineHeight: 1.6, mb: 2.5 }}>
-                      {localBid
-                        ? `A private receipt for ${localBid} TOK is stored locally. Reveal to prove your bid on-chain.`
-                        : 'No local bid receipt was found on this device.'}
+                    <Typography sx={{ color: mutedText, fontSize: 13, lineHeight: 1.6, mb: 2 }}>
+                      {localBid || bidAmount
+                        ? `A private receipt for ${localBid || bidAmount} TOK is ready. Click below to prove your bid on-chain.`
+                        : 'Confirm or enter your private bid amount below to generate the ZK-proof and reveal.'}
                     </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 2.5 }}>
+                      <TextField
+                        fullWidth
+                        label="Bid amount to reveal"
+                        value={bidAmount || localBid}
+                        onChange={(event) => {
+                          const val = event.target.value.replace(/[^0-9]/g, '');
+                          setBidAmount(val);
+                          setLocalBid(val);
+                        }}
+                        placeholder="e.g. 142"
+                        InputProps={{
+                          sx: { borderRadius: 2.5 },
+                        }}
+                      />
+                    </Stack>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                       <Button
                         variant="contained"
                         onClick={() => void handleAction('revealBid')}
-                        disabled={!localBid}
+                        disabled={!(bidAmount || localBid)}
                         sx={{ py: 1.2, px: 3, borderRadius: 2.5, background: redMain, fontWeight: 700 }}
                       >
                         Reveal and prove bid
                       </Button>
-                      {localBid && (
+                      {(localBid || bidAmount) && (
                         <Button
                           variant="outlined"
                           onClick={downloadBackup}
