@@ -209,21 +209,28 @@ The following maps the repository's implementation to the Midnight builder journ
 
 ## Project Showcase & Verification Proofs
 
-### User Interface
+### CI/CD & Automated Verification Proofs
 
-#### 1. Home Page & Recent Auctions
+![CI/CD Pipeline Build & Test Passing Status](https://github.com/user-attachments/assets/8e80a542-1bee-45f7-8452-ad554110c250)
+
+### User Interface Showcase
+
+#### Full Application Dashboard & Hero Section
+![SealedBid Application Dashboard Overview](https://github.com/user-attachments/assets/df725b99-4542-4c51-81e8-fb6f0b3a6bef)
+
+#### Interactive Sealed Auction Room
+![Sealed-Bid Auction Room Interface](https://github.com/user-attachments/assets/c0c16d13-f46e-4f9c-808e-a93f149334b5)
+
+#### Interface Features Gallery
+
 ![SealedBid home page and recent auctions](https://github.com/user-attachments/assets/33171447-c5d9-4588-8011-42c922048985)
 
-#### 2. Interactive Contract Address Reveal
 ![Interactive contract address reveal](https://github.com/user-attachments/assets/29f9e88c-239b-4e5b-b678-5183b9d080ef)
 
-#### 3. Auction Room Dashboard
 ![SealedBid auction room dashboard](https://github.com/user-attachments/assets/b0a282d7-a553-41d9-b26d-25f1238426b6)
 
-#### 4. Create Auction Admin Portal
 ![Create auction admin portal](https://github.com/user-attachments/assets/e7cf8483-6b0e-4e4c-a5d9-361d22b0ca99)
 
-#### 5. Privacy Model & Architecture
 ![SealedBid privacy model and architecture](https://github.com/user-attachments/assets/f08ffe4c-4a9e-474b-985f-0800fec279e3)
 
 ---
