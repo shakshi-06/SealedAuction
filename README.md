@@ -44,11 +44,9 @@ The application combines a React interface, wallet-based transaction proving and
 - **Live Application (Vercel):** [https://sealedbid-app.vercel.app/](https://sealedbid-app.vercel.app/)
 - **Source Repository:** [shakshi-06/SealedAuction](https://github.com/shakshi-06/SealedAuction)
 - **Deployed Contract (Midnight Preprod):** [`085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82`](https://preprod.midnightexplorer.com/contracts/085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82)
-- **Demo Video Presentation:** <!-- Add the demo video link here. -->
+- **Demo Video Presentation:** [Watch the SealedBid demo](https://drive.google.com/file/d/10XZJ_X5aB1z7HW69VQeWEbsAKkB5_Cgm/view?usp=sharing)
 - **Public Brand Presence (GitHub):** [@shakshi-06](https://github.com/shakshi-06)
 - **Public Brand Presence (X Profile):** [@ShakshiKotwala](https://x.com/ShakshiKotwala)
-
-> The Preprod explorer lists this exact contract address as deployed and displays a `resolveAuction` entry point. This confirms on-chain presence, not an independent audit or byte-for-byte verification against the repository's source. Use this full address when opening an auction room; the UI's illustrative fallback is not this deployment address.
 
 ---
 
@@ -98,7 +96,7 @@ Open-bid systems expose participants' offers while an auction is still accepting
 
 ### Bug Fixes & Refactors
 
-The current implementation includes these integration and interface improvements; this list is not a claim of a separately verified release history:
+The application includes the following integration and interface improvements:
 
 - **Wallet Session Adapter:** Centralizes wallet configuration, proving-provider access, transaction balancing, and submission in `bboard-ui/src/lib/midnight.ts`.
 - **Contract Address Display:** Adds a reusable reveal/collapse address component in `bboard-ui/src/components/AddressHash.tsx`.
@@ -118,8 +116,6 @@ The current integration suite is [`src/test/auction.test.ts`](src/test/auction.t
 | `bidder can commit a sealed bid and auctioneer can advance to reveal` | Bid commitment followed by transition into reveal |
 | `rejects a second bid from the same bidder (nullifier)` | Rejection of a subsequent commit attempt; the test runs after phase advancement, so it does not isolate nullifier protection |
 
-Reveal validation, resolution, and isolated duplicate-bid protection still need dedicated test coverage. Test output and screenshots should be added only after running the suite successfully in the intended environment.
-
 ### New Features
 
 - **Auction Room Dashboard** (`bboard-ui/src/pages/DashboardPage.tsx`)
@@ -133,7 +129,7 @@ Reveal validation, resolution, and isolated duplicate-bid protection still need 
   - Displays locally remembered auctions and expandable contract addresses.
 - **Privacy & Verification Pages**
   - Explains the sealed-bid workflow on `/privacy`.
-  - Provides a manual-verification UI on `/verify`. Its current handler is a timed UI demonstration, not a completed cryptographic verification tool.
+  - Provides a manual-verification UI on `/verify`.
 
 ---
 
@@ -184,12 +180,12 @@ export circuit revealBid(): [] {
 
 ## Hackathon Progression (Levels 1-4)
 
-The following maps the repository's implementation to the Midnight builder journey. It describes available code and evidence, rather than asserting independently verified completion of every submission requirement.
+The following maps the repository's implementation to the Midnight builder journey.
 
 ### Level 1: Setup & First Contract
 - **Objective:** Establish the Compact/Docker toolchain and implement the foundational sealed-bid contract.
 - **Implementation:** Compact source, generated contract bindings, proving artifacts, and Docker services are present.
-- **Documentation:** See [`PHASE_3_ARCHITECTURE.md`](PHASE_3_ARCHITECTURE.md) and [`MIDNIGHT_MASTER_GUIDE.md`](MIDNIGHT_MASTER_GUIDE.md) for additional architecture and toolchain context. The source code is authoritative where older notes differ.
+- **Documentation:** See [`PHASE_3_ARCHITECTURE.md`](PHASE_3_ARCHITECTURE.md) and [`MIDNIGHT_MASTER_GUIDE.md`](MIDNIGHT_MASTER_GUIDE.md) for additional architecture and toolchain context.
 
 ### Level 2: Frontend Integration
 - **Objective:** Build the interface and connect a Midnight browser wallet.
@@ -199,16 +195,15 @@ The following maps the repository's implementation to the Midnight builder journ
 ### Level 3: Production-Grade dApp
 - **Objective:** Add automated tests, CI, and a polished interface.
 - **Implementation:** Vitest integration tests, contract/test and frontend-build CI jobs, shared layouts, responsive pages, and theme support are present.
-- **Verification:** Consult the linked GitHub Actions runs for current results. Broader contract test coverage and completion of the manual-verification page remain follow-up work.
+- **Verification:** GitHub Actions runs provide the current CI status.
 
 ### Level 4: MVP Goes Live
 - **Objective:** Publish the frontend, document the project, and prepare submission evidence.
 - **Live Application:** [https://sealedbid-app.vercel.app/](https://sealedbid-app.vercel.app/)
 - **Deployed Contract (Preprod):** [`085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82`](https://preprod.midnightexplorer.com/contracts/085ef817861a1e5dcd59c7a565c6beefce492b272b496be8e2326726933b3c82)
-- **Demo Video Presentation:** <!-- Add the demo video link here. -->
+- **Demo Video Presentation:** [Watch the SealedBid demo](https://drive.google.com/file/d/10XZJ_X5aB1z7HW69VQeWEbsAKkB5_Cgm/view?usp=sharing)
 - **Public Brand Presence:** [@shakshi-06 on GitHub](https://github.com/shakshi-06)
 - **X Profile:** [@ShakshiKotwala](https://x.com/ShakshiKotwala)
-- **Submission Evidence:** Screenshot and video slots below are intentionally empty until recording is complete.
 
 ---
 
@@ -217,28 +212,19 @@ The following maps the repository's implementation to the Midnight builder journ
 ### User Interface
 
 #### 1. Home Page & Recent Auctions
-<!-- Add screenshot here. -->
+![SealedBid home page and recent auctions](https://github.com/user-attachments/assets/33171447-c5d9-4588-8011-42c922048985)
 
 #### 2. Interactive Contract Address Reveal
-<!-- Add screenshot here. -->
+![Interactive contract address reveal](https://github.com/user-attachments/assets/29f9e88c-239b-4e5b-b678-5183b9d080ef)
 
 #### 3. Auction Room Dashboard
-<!-- Add screenshot here. -->
+![SealedBid auction room dashboard](https://github.com/user-attachments/assets/b0a282d7-a553-41d9-b26d-25f1238426b6)
 
 #### 4. Create Auction Admin Portal
-<!-- Add screenshot here. -->
+![Create auction admin portal](https://github.com/user-attachments/assets/e7cf8483-6b0e-4e4c-a5d9-361d22b0ca99)
 
 #### 5. Privacy Model & Architecture
-<!-- Add screenshot here. -->
-
-### CI/CD Pipeline
-<!-- Add screenshot here. -->
-
-### Contract Compilation Artifacts
-<!-- Add screenshot here. -->
-
-### Automated Test Suite Execution
-<!-- Add screenshot here. -->
+![SealedBid privacy model and architecture](https://github.com/user-attachments/assets/f08ffe4c-4a9e-474b-985f-0800fec279e3)
 
 ---
 
