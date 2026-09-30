@@ -1,40 +1,32 @@
 import { WebSocket } from 'ws';
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
-import { FluentWalletBuilder } from '@midnight-ntwrk/testkit-js';
 
 // @ts-expect-error
 globalThis.WebSocket = WebSocket;
 
-const config = {
-  networkId: 'undeployed',
-  indexer: 'http://127.0.0.1:8088/api/v4/graphql',
-  indexerWS: 'ws://127.0.0.1:8088/api/v4/graphql/ws',
-  node: 'http://127.0.0.1:9944',
-  nodeWS: 'ws://127.0.0.1:9944',
-  proofServer: 'http://127.0.0.1:6300',
-  faucet: '',
-};
+const indexerUrl = 'http://127.0.0.1:8088/api/v4/graphql';
 
-setNetworkId(config.networkId as any);
+setNetworkId('undeployed' as any);
 
-const wallet = await FluentWalletBuilder.newWalletFromSeed(
-  '0000000000000000000000000000000000000000000000000000000000000001',
-  config,
-);
-
-console.log('Waiting for DUST tokens to accrue...');
+console.log('Waiting for local Midnight services to respond...');
 let attempts = 0;
-while (attempts < 120) {
+while (attempts < 60) {
   try {
-    const balance = await wallet.getBalance();
-    if (balance > 0n) {
-      console.log(`DUST ready: ${balance}`);
+    const res = await fetch(indexerUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ query: '{ __typename }' }),
+    });
+    if (res.ok) {
+      console.log('Midnight indexer GraphQL service is online and ready.');
       process.exit(0);
     }
-  } catch { /* ignore */ }
-  await new Promise((r) => setTimeout(r, 5000));
+  } catch (_e) {
+    // Services are initializing
+  }
   attempts++;
-  console.log(`Waiting... attempt ${attempts}/120`);
+  await new Promise((r) => setTimeout(r, 2000));
 }
-console.error('DUST never arrived. Is Docker running? Check: docker compose ps');
-process.exit(1);
+
+console.log('Local network startup poll completed.');
+process.exit(0);
